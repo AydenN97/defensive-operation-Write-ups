@@ -96,7 +96,7 @@ The registry modification attempted to disable Windows Defender Anti-Spyware pro
 This behavior is a well-known Defense Evasion technique frequently employed by malware to weaken endpoint security, avoid detection, and increase the likelihood of successful post-exploitation activity.
 
 Screenshots: 
-
+<img width="509" height="212" alt="Image" src="https://github.com/user-attachments/assets/164b98e5-a53e-4b76-899e-fdbc2961723d" />
 
 
 *** Covering Tracks *** 

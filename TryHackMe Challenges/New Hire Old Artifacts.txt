@@ -66,8 +66,6 @@ PalitExplorer.exe
 These filenames appeared highly unusual and warranted additional investigation.
 
 
-Screenshots:
-
 
 *** Network Activity Analysis ***
 
@@ -118,6 +116,34 @@ The randomly generated names of the targeted executables, combined with evidence
 This activity is consistent with an attempt to terminate malicious processes and remove associated artifacts, potentially to conceal activity and complicate incident response and forensic analysis.
 
 Screenshots: 
+<img width="529" height="283" alt="Image" src="https://github.com/user-attachments/assets/bf911c00-0174-4ecd-a51e-51b94e4cec5a" />
+
+<img width="465" height="287" alt="Image" src="https://github.com/user-attachments/assets/f89643b6-1d80-40ab-84df-c6ce0869916e" />
+
+
+*** Defense Evasion *** 
+
+The investigation indicated that the attacker executed several commands within a PowerShell session to modify the behavior of Microsoft Defender. The objective was to identify these commands within the endpoint telemetry and determine how the attacker attempted to weaken security protections.
+
+Because Sysmon Event ID 1 records process creation and command-line activity, the investigation focused on process creation events and filtered for PowerShell executions.
+
+Splunk Query
+source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+| stats count by CommandLine
+| search CommandLine="*powershell*"
+
+Reviewing the resulting command-line activity revealed several PowerShell commands using WMIC to interact with the Windows Defender MSFT_MpPreference configuration:
+
+/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147735503 ThreatIDDefaultAction_Actions=6 Force=True
+/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737007 ThreatIDDefaultAction_Actions=6 Force=True
+/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737010 ThreatIDDefaultAction_Actions=6 Force=True
+/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737394 ThreatIDDefaultAction_Actions=6 Force=True
+
+Researching the command, it can be concluded that it modified Microsoft Defender's response configuration for specific threat IDs, indicating an attempt to alter how Defender handled detected threats.
+
+
+
+
 
 
 

@@ -81,7 +81,6 @@ The destination IP address was:
 2[.]56[.]59[.]42
 The IP address was submitted to VirusTotal, where it was identified as malicious by 14 security vendors, further strengthening the evidence that the endpoint had executed malicious software capable of communicating with external infrastructure.
 
-Screenshots:
 
 
 
@@ -101,8 +100,26 @@ Screenshots:
 
 *** Covering Tracks *** 
 
-We are told that some processes were killed and associated binaries were deleted. In windows, the common indicator task kill /m is evident when killing processes, so our best course of action is to query sysmon process creation events with event code = 1
-After that, we analyze command line history for any presence of task kill /m or anything similar
+On Windows systems, process termination can be investigated by looking for the use of taskkill.exe, particularly commands using the /IM parameter to terminate processes by image name.
+
+Because Sysmon Event ID 1 records process creation, the investigation focused on process creation events and command-line activity.
+
+Splunk Query
+source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+| stats count by Message
+
+Reviewing the resulting command-line history revealed the execution of taskkill.exe with the /IM parameter:
+
+taskkill /im "WvmIOrcfsuILdX6SNwIRmGOJ.exe"
+taskkill /im "phcIAmLJMAIMSa9j9MpgJo1m:.exe"
+
+The randomly generated names of the targeted executables, combined with evidence that the associated binaries were subsequently deleted, were highly suspicious.
+
+This activity is consistent with an attempt to terminate malicious processes and remove associated artifacts, potentially to conceal activity and complicate incident response and forensic analysis.
+
+Screenshots: 
+
+
 
 
 

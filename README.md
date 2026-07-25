@@ -125,7 +125,7 @@ A collection of defensive security labs, SOC investigations, threat-hunting exer
 
 ## Write-Up Template
 
-Each challenge or investigation includes:
+Each challenge or investigation may include:
 
 - **Scenario Overview**
 - **Alert Details**

@@ -9,11 +9,13 @@ Objective
 Analyze the endpoint's Windows event logs in Splunk to identify indicators of compromise (IOCs), determine whether malicious activity occurred, and identify any findings that should be reported to the customer.
 
 ***** Investigation Methodology ******
-** 1. Alert Intake **
+
+*** 1. Alert Intake ***
 
 The logs required for this investigation had already been ingested into Splunk. This investigation focuses on log analysis, event correlation, and threat hunting using Splunk's Search & Reporting application.
 
-** 2. Initial Triage **
+
+*** 2. Initial Triage ***
 
 The endpoint contained the following Windows log sources:
 
@@ -39,72 +41,67 @@ Several characteristics made this process stand out:
 The executable had a random, non-descriptive filename.
 It executed from the user's Temp directory, a location commonly abused by malware.
 The filename did not resemble any legitimate Windows or business application.
-
 The process hash was extracted from the Sysmon event.
-
-MD5
-
-7165E9D7456520D1F1644AA26DA7C423
-
+MD5: 7165E9D7456520D1F1644AA26DA7C423
 The hash was submitted to VirusTotal for reputation analysis.
 
 *** Threat Intelligence ***
 
 VirusTotal identified the file as malicious, with 54 of 71 security vendors detecting it as malware.
-
 The reputation results confirmed that the executable was the Web Browser Password Viewer referenced in the investigation scenario.
+
+Screenshots:
+
+
 
 *** Additional Investigation ***
 
 While continuing to review the process creation events, another alert indicated that additional suspicious binaries had been executed from the same temporary directory:
-
 C:\Users\Finance01\AppData\Local\Temp
-
 Reviewing the command-line history revealed several additional suspicious files:
-
 fj4ghga23_fsa.txt
 IonicLarge.exe
 PalitExplorer.exe
-
 These filenames appeared highly unusual and warranted additional investigation.
+
+
+Screenshots:
+
 
 *** Network Activity Analysis ***
 
 The scenario indicated that one of the identified binaries established an outbound connection to a known malicious IP address.
-
 To determine which executable initiated the network connection, the investigation was narrowed to the suspicious binary IonicLarge.exe.
-
 Splunk Query
 source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
 Image="C:\Users\Finance01\AppData\Local\Temp\IonicLarge.exe"
-
 Analysis showed that IonicLarge.exe was the only suspicious executable generating outbound network connections.
-
 The destination IP address was:
-
 2[.]56[.]59[.]42
-
 The IP address was submitted to VirusTotal, where it was identified as malicious by 14 security vendors, further strengthening the evidence that the endpoint had executed malicious software capable of communicating with external infrastructure.
+
+Screenshots:
+
+
 
 *** Registry Modification Analysis ***
 
 The investigation then shifted toward identifying persistence or defense-evasion techniques.
-
 Because Sysmon Event ID 13 records registry value modifications, the search was narrowed to registry events associated with IonicLarge.exe.
-
 Investigation
-
 Filtering on Event ID 13 immediately revealed that the executable attempted to modify the following Windows Defender policy registry key:
-
 HKLM\SOFTWARE\Policies\Microsoft\Windows Defender
-
 The registry modification attempted to disable Windows Defender Anti-Spyware protections.
-
 This behavior is a well-known Defense Evasion technique frequently employed by malware to weaken endpoint security, avoid detection, and increase the likelihood of successful post-exploitation activity.
+
+Screenshots: 
+
+
 
 *** Covering Tracks *** 
 
-We are told that some processes were killed and associated binaries were deleted. 
+We are told that some processes were killed and associated binaries were deleted. In windows, the common indicator task kill /m is evident when killing processes, so our best course of action is to query sysmon process creation events with event code = 1
+After that, we analyze command line history for any presence of task kill /m or anything similar
 
 
 

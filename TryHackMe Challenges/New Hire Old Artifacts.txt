@@ -50,7 +50,8 @@ The hash was submitted to VirusTotal for reputation analysis.
 VirusTotal identified the file as malicious, with 54 of 71 security vendors detecting it as malware.
 The reputation results confirmed that the executable was the Web Browser Password Viewer referenced in the investigation scenario.
 
-Screenshots:<img width="904" height="307" alt="Image" src="https://github.com/user-attachments/assets/d8c7ce98-f55e-4b70-baa8-376868c55bc0" />
+Screenshots:
+<img width="904" height="307" alt="Image" src="https://github.com/user-attachments/assets/d8c7ce98-f55e-4b70-baa8-376868c55bc0" />
 
 
 

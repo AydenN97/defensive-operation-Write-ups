@@ -63,6 +63,7 @@ The reputation results confirmed that the executable was the Web Browser Passwor
 
 
 
+
 ***2.Threat Hunting:***
 
 While continuing to review the process creation events, another alert indicated that additional suspicious binaries had been executed from the same temporary directory:
@@ -112,26 +113,26 @@ Filtering Sysmon events for **Event ID 13** revealed that `IonicLarge.exe` attem
 <img width="509" height="212" alt="Image" src="https://github.com/user-attachments/assets/164b98e5-a53e-4b76-899e-fdbc2961723d" />
 
 
+
 ***5.Defense Evasion*** 
 
 On Windows systems, process termination can be investigated by looking for the use of taskkill.exe, particularly commands using the /IM parameter to terminate processes by image name.
-
 Because Sysmon Event ID 1 records process creation, the investigation focused on process creation events and command-line activity.
 
-Splunk Query
+### Splunk Query
+```spl
 source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
 | stats count by Message
-
+```
 Reviewing the resulting command-line history revealed the execution of taskkill.exe with the /IM parameter:
 
-taskkill /im "WvmIOrcfsuILdX6SNwIRmGOJ.exe"
-taskkill /im "phcIAmLJMAIMSa9j9MpgJo1m:.exe"
+- taskkill /im "WvmIOrcfsuILdX6SNwIRmGOJ.exe"
+- taskkill /im "phcIAmLJMAIMSa9j9MpgJo1m:.exe"
 
 The randomly generated names of the targeted executables, combined with evidence that the associated binaries were subsequently deleted, were highly suspicious.
-
 This activity is consistent with an attempt to terminate malicious processes and remove associated artifacts, potentially to conceal activity and complicate incident response and forensic analysis.
 
-Screenshots: 
+ 
 <img width="529" height="283" alt="Image" src="https://github.com/user-attachments/assets/bf911c00-0174-4ecd-a51e-51b94e4cec5a" />
 
 <img width="465" height="287" alt="Image" src="https://github.com/user-attachments/assets/f89643b6-1d80-40ab-84df-c6ce0869916e" />

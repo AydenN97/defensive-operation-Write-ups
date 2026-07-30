@@ -14,7 +14,6 @@ During onboarding, it was discovered that an endpoint assigned to a newly hired 
 
 **Category:** Blue Team / SIEM / Endpoint Investigation
 
-**Link to Completion Badge:** [https://tryhackme.com/room/newhireoldartifacts?utm_campaign=social_share&utm_medium=social&utm_content=share-completed-room&utm_source=copy&sharerId=67591d3adf156b3c9d5dda16]
 
 
 ## Start of Investigation ##

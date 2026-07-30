@@ -23,7 +23,7 @@ During onboarding, it was discovered that an endpoint assigned to a newly hired 
 The logs required for this investigation had already been ingested into Splunk. This investigation focuses on log analysis, event correlation, and threat hunting using Splunk's Search & Reporting application.
 
 
-***1. Initial Triage***
+***1. Initial Triage:***
 
 The endpoint contained the following Windows log sources:
 - Application
@@ -52,7 +52,7 @@ Several characteristics made this process stand out:
 
 The executable's MD5 hash was extracted from the Sysmon event and submitted to VirusTotal for reputation analysis. VirusTotal identified the sample as malicious, with 54 of 71 security vendors detecting it as malware, confirming that it was the Web Browser Password Viewer referenced in the scenario.
 
-***1A.Threat Intelligence:***
+***1A. Threat Intelligence:***
 
 VirusTotal identified the file as malicious, with 54 of 71 security vendors detecting it as malware.
 The reputation results confirmed that the executable was the Web Browser Password Viewer referenced in the investigation scenario.
@@ -77,7 +77,7 @@ Reviewing the command-line history revealed several additional suspicious files:
 These filenames appeared highly unusual and warranted additional investigation.
 
 
-***3.Network Activity Analysis:***
+***3. Network Activity Analysis:***
 
 During the investigation, it was noted that one of the identified binaries established an outbound connection to a known malicious IP address.
 To determine which executable initiated the network connection, the investigation was narrowed to the suspicious binary IonicLarge.exe.
@@ -98,7 +98,7 @@ The IP address was submitted to VirusTotal, where it was identified as malicious
 
 
 
-***4.Registry Modification Analysis:***
+***4. Registry Modification Analysis:***
 
 The investigation then shifted toward identifying potential persistence mechanisms and defense-evasion techniques used by the suspicious executable.
 
@@ -114,7 +114,7 @@ Filtering Sysmon events for **Event ID 13** revealed that `IonicLarge.exe` attem
 
 
 
-***5.Defense Evasion*** 
+***5. Covering Tracks:*** 
 
 On Windows systems, process termination can be investigated by looking for the use of taskkill.exe, particularly commands using the /IM parameter to terminate processes by image name.
 Because Sysmon Event ID 1 records process creation, the investigation focused on process creation events and command-line activity.
@@ -138,7 +138,7 @@ This activity is consistent with an attempt to terminate malicious processes and
 <img width="465" height="287" alt="Image" src="https://github.com/user-attachments/assets/f89643b6-1d80-40ab-84df-c6ce0869916e" />
 
 
-*** Defense Evasion *** 
+***6. Defense Evasion:*** 
 
 The investigation indicated that the attacker executed several commands within a PowerShell session to modify the behavior of Microsoft Defender. The objective was to identify these commands within the endpoint telemetry and determine how the attacker attempted to weaken security protections.
 

@@ -1,102 +1,118 @@
-Scenario Overview
+***Title:*** Challenge 1 Write-Up: New Hire Old Artifacts
 
-As a SOC Analyst at a Managed Security Service Provider (MSSP), I was tasked with investigating a newly onboarded customer, Widget LLC, whose endpoints had recently been integrated into our Splunk environment.
 
+***Scenario Overview:*** As a SOC Analyst at a Managed Security Service Provider (MSSP), I was tasked with investigating a newly onboarded customer, Widget LLC, whose endpoints had recently been integrated into our Splunk environment.
 During onboarding, it was discovered that an endpoint assigned to a newly hired Financial Analyst had operated for an extended period with its endpoint security protections disabled. Because of this security gap, the endpoint required further investigation to determine whether any malicious activity had occurred while it was unprotected.
 
-Objective
+***Objective:*** Analyze the endpoint's Windows event logs in Splunk to identify indicators of compromise (IOCs), determine whether malicious activity occurred, and identify any findings that should be reported to the customer.
 
-Analyze the endpoint's Windows event logs in Splunk to identify indicators of compromise (IOCs), determine whether malicious activity occurred, and identify any findings that should be reported to the customer.
+***Background:***
 
-***** Investigation Methodology ******
+**Room Link:** [https://tryhackme.com/room/newhireoldartifacts.com]
 
-*** 1. Alert Intake ***
+**Difficulty:** 🟡 Medium
+
+**Category:** Blue Team / SIEM / Endpoint Investigation
+
+
+## Start of Investigation ##
+
+
+***Alert Intake***
 
 The logs required for this investigation had already been ingested into Splunk. This investigation focuses on log analysis, event correlation, and threat hunting using Splunk's Search & Reporting application.
 
 
-*** 2. Initial Triage ***
+***1. Initial Triage***
 
 The endpoint contained the following Windows log sources:
-
-Application
-Microsoft Sysmon Operational
-Security
-System
+- Application
+- Microsoft Sysmon Operational
+- Security
+- System
 Initial Information
 
-The initial indicator provided was that a Web Browser Password Viewer had executed on the endpoint.
+The initial indicator provided to us was that concluded that a malware- Web Browser Password Viewer had executed on the endpoint. We will want to look closely for execution of malicious and abnormal executables and the presence of unsual .dlls, .bats, etc. 
+Because process execution is best analyzed using Sysmon Process Creation events (Event ID 1), Sysmon was selected as the primary log source. We will review the results by command line. 
 
-Because process execution is best analyzed using Sysmon Process Creation events (Event ID 1), Sysmon was selected as the primary log source. Since the investigation was already scoped to the affected endpoint, additional filtering by hostname was unnecessary.
-
-Splunk Query
-sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+### Splunk Query
+```spl
+sourcetype="WinEventLog:Microsoft-Windows-Sysmon/Operational"
+EventCode=1
 | stats count by CommandLine
-Findings
+```
 
-Reviewing the process creation events immediately revealed the execution of a suspicious executable named 11111.exe.
-
+Reviewing Sysmon Event ID 1 process creation logs revealed the execution of a suspicious executable named **11111.exe**. The binary immediately stood out because it executed from the user's temporary directory using a randomly generated filename, both of which are common indicators of malicious activity.
 Several characteristics made this process stand out:
+- The executable had a random, non-descriptive filename.
+- It executed from the user's Temp directory, a location commonly abused by malware.
+- The filename did not resemble any legitimate Windows or business application.
+- The process hash was extracted from the Sysmon event.
+- MD5: 7165E9D7456520D1F1644AA26DA7C423
 
-The executable had a random, non-descriptive filename.
-It executed from the user's Temp directory, a location commonly abused by malware.
-The filename did not resemble any legitimate Windows or business application.
-The process hash was extracted from the Sysmon event.
-MD5: 7165E9D7456520D1F1644AA26DA7C423
-The hash was submitted to VirusTotal for reputation analysis.
+The executable's MD5 hash was extracted from the Sysmon event and submitted to VirusTotal for reputation analysis. VirusTotal identified the sample as malicious, with 54 of 71 security vendors detecting it as malware, confirming that it was the Web Browser Password Viewer referenced in the scenario.
 
-*** Threat Intelligence ***
+***1A.Threat Intelligence:***
 
 VirusTotal identified the file as malicious, with 54 of 71 security vendors detecting it as malware.
 The reputation results confirmed that the executable was the Web Browser Password Viewer referenced in the investigation scenario.
 
-Screenshots:
-<img width="904" height="307" alt="Image" src="https://github.com/user-attachments/assets/d8c7ce98-f55e-4b70-baa8-376868c55bc0" />
+<img width="904" height="307" alt="Image" src="https://github.com/user-attachments/assets/d8c7ce98-f55e-4b70-baa8-376868c55bc0" /> 
+	
+	*11111.exe Threat Intelligence lookup*
 
 
 
-*** Additional Investigation ***
+***2.Threat Hunting:***
 
 While continuing to review the process creation events, another alert indicated that additional suspicious binaries had been executed from the same temporary directory:
-C:\Users\Finance01\AppData\Local\Temp
+- C:\Users\Finance01\AppData\Local\Temp
+
 Reviewing the command-line history revealed several additional suspicious files:
-fj4ghga23_fsa.txt
-IonicLarge.exe
-PalitExplorer.exe
+- fj4ghga23_fsa.txt
+- IonicLarge.exe
+- PalitExplorer.exe
+
 These filenames appeared highly unusual and warranted additional investigation.
 
 
+***3.Network Activity Analysis:***
 
-*** Network Activity Analysis ***
-
-The scenario indicated that one of the identified binaries established an outbound connection to a known malicious IP address.
+During the investigation, it was noted that one of the identified binaries established an outbound connection to a known malicious IP address.
 To determine which executable initiated the network connection, the investigation was narrowed to the suspicious binary IonicLarge.exe.
-Splunk Query
+
+### Splunk Query
+```spl 
 source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
 Image="C:\Users\Finance01\AppData\Local\Temp\IonicLarge.exe"
-Analysis showed that IonicLarge.exe was the only suspicious executable generating outbound network connections.
+```
+
+The logs showed that IonicLarge.exe was the only suspicious executable generating outbound network connections.
+
 The destination IP address was:
-2[.]56[.]59[.]42
+- 2[.]56[.]59[.]42
+
 The IP address was submitted to VirusTotal, where it was identified as malicious by 14 security vendors, further strengthening the evidence that the endpoint had executed malicious software capable of communicating with external infrastructure.
 
 
 
 
-*** Registry Modification Analysis ***
+***4.Registry Modification Analysis:***
 
-The investigation then shifted toward identifying persistence or defense-evasion techniques.
-Because Sysmon Event ID 13 records registry value modifications, the search was narrowed to registry events associated with IonicLarge.exe.
-Investigation
-Filtering on Event ID 13 immediately revealed that the executable attempted to modify the following Windows Defender policy registry key:
-HKLM\SOFTWARE\Policies\Microsoft\Windows Defender
-The registry modification attempted to disable Windows Defender Anti-Spyware protections.
-This behavior is a well-known Defense Evasion technique frequently employed by malware to weaken endpoint security, avoid detection, and increase the likelihood of successful post-exploitation activity.
+The investigation then shifted toward identifying potential persistence mechanisms and defense-evasion techniques used by the suspicious executable.
 
-Screenshots: 
+Because **Sysmon Event ID 13** logs registry value modifications, the investigation was narrowed to registry activity associated with **IonicLarge.exe**.
+
+### Findings
+
+Filtering Sysmon events for **Event ID 13** revealed that `IonicLarge.exe` attempted to modify the following Windows Defender registry key:
+
+- HKLM\SOFTWARE\Policies\Microsoft\Windows Defender
+
 <img width="509" height="212" alt="Image" src="https://github.com/user-attachments/assets/164b98e5-a53e-4b76-899e-fdbc2961723d" />
 
 
-*** Covering Tracks *** 
+***5.Defense Evasion*** 
 
 On Windows systems, process termination can be investigated by looking for the use of taskkill.exe, particularly commands using the /IM parameter to terminate processes by image name.
 

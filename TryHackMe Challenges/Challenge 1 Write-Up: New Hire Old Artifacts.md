@@ -14,6 +14,8 @@ During onboarding, it was discovered that an endpoint assigned to a newly hired 
 
 **Category:** Blue Team / SIEM / Endpoint Investigation
 
+**Link to Completion Badge:** [https://tryhackme.com/room/newhireoldartifacts?utm_campaign=social_share&utm_medium=social&utm_content=share-completed-room&utm_source=copy&sharerId=67591d3adf156b3c9d5dda16]
+
 
 ## Start of Investigation ##
 
@@ -159,42 +161,55 @@ Reviewing the resulting command-line activity revealed several PowerShell comman
 Researching the command, it can be concluded that it modified Microsoft Defender's response configuration for specific threat IDs, indicating an attempt to alter how Defender handled detected threats.
 
 
-*****  Conclusion  *****
+## Findings and Conclusion
 
-The investigation identified multiple indicators of compromise and behaviors consistent with a compromised Windows endpoint. Analysis of Sysmon process creation, network, and registry activity revealed evidence of malicious execution, credential theft, command-and-control communication, defense evasion, and attempts to remove evidence of the activity.
+The investigation identified multiple indicators of compromise demonstrating that the endpoint was likely compromised by malicious activity. Analysis of system events, process execution, network connections, and registry modifications revealed behaviors consistent with credential theft, defense evasion, persistence, and attempted artifact removal.
 
-Key Findings
-Identified the execution of a Web Browser Password Viewer, indicating potential credential theft activity.
-Identified multiple suspicious binaries executing from the user's temporary directory, including IonicLarge.exe and PalitExplorer.exe.
-Validated a suspicious executable hash through VirusTotal, which was detected as malicious by 54 of 71 security vendors.
-Identified an outbound connection from IonicLarge.exe to 2[.]56[.]59[.]42, which was identified as malicious by 14 security vendors.
-Discovered registry modifications targeting HKLM\SOFTWARE\Policies\Microsoft\Windows Defender, indicating an attempt to weaken endpoint security protections.
-Identified PowerShell and WMIC commands modifying Microsoft Defender threat-response configurations.
-Observed taskkill.exe being used to terminate suspicious processes, followed by deletion of associated binaries, indicating potential attempts to remove evidence and complicate forensic analysis.
+### Key Findings
 
-Taken together, these findings provide strong evidence that the endpoint was compromised and that the attacker attempted to maintain execution, communicate with external infrastructure, weaken security controls, and remove artifacts associated with the intrusion.
+- **Potential Credential Theft Activity Identified:**  
+  A Web Browser Password Viewer application was executed on the endpoint, indicating potential attempts to collect stored browser credentials.
 
-MITRE ATT&CK Techniques
+- **Suspicious Binary Execution Observed:**  
+  Multiple suspicious executables were identified running from the user's temporary directory, including:
+  - `IonicLarge.exe`
+  - `PalitExplorer.exe`
 
-The observed activity can be mapped to several MITRE ATT&CK tactics and techniques:
+  Execution from temporary directories is commonly associated with malware staging and user-level execution.
 
-Tactic	Technique	Evidence
-Credential Access	T1555 – Credentials from Password Stores	Web Browser Password Viewer execution
-Execution	T1059.001 – PowerShell	PowerShell commands used to modify Microsoft Defender configuration
-Execution	T1047 – Windows Management Instrumentation	WMIC commands interacting with MSFT_MpPreference
-Defense Evasion	T1562.001 – Impair Defenses: Disable or Modify Tools	Registry and PowerShell activity targeting Microsoft Defender
-Defense Evasion	T1070 – Indicator Removal	Suspicious processes terminated and associated binaries deleted
-Command and Control	T1071* / Network Communication	Malicious outbound communication identified from IonicLarge.exe
+- **Malicious File Hash Confirmed:**  
+  The hash of a suspicious executable was submitted to VirusTotal for validation. The file was identified as malicious, with **54 out of 71 security vendors** detecting the sample as a threat.
 
-Note: ATT&CK mappings should be treated as investigative classifications rather than definitive attribution. The exact technique for the network communication should be determined from the protocol and destination details available in the logs.
+- **Malicious Network Communication Detected:**  
+  `IonicLarge.exe` established an outbound connection to the IP address:
 
-Impact Assessment
+  ```text
+  2[.]56[.]59[.]42
+
+## MITRE ATT&CK Mapping
+
+The observed activity was mapped to several MITRE ATT&CK tactics and techniques based on the behaviors identified during the investigation. These mappings represent investigative classifications of observed activity and should not be considered definitive attribution of attacker techniques.
+
+| Tactic | Technique | Evidence |
+|--------|-----------|----------|
+| Credential Access | **T1555 – Credentials from Password Stores** | Execution of a Web Browser Password Viewer, indicating potential access to credentials stored within web browsers. |
+| Execution | **T1059.001 – PowerShell** | PowerShell commands were executed to modify Microsoft Defender threat-response configurations. |
+| Execution | **T1047 – Windows Management Instrumentation (WMI)** | WMIC commands were used to interact with the `MSFT_MpPreference` class and modify Microsoft Defender settings. |
+| Defense Evasion | **T1562.001 – Impair Defenses: Disable or Modify Tools** | Registry modifications and PowerShell activity were used to weaken Microsoft Defender protections and alter security settings. |
+| Defense Evasion | **T1070 – Indicator Removal** | The attacker used `taskkill.exe` to terminate suspicious processes and removed associated malicious files to reduce forensic evidence. |
+| Command and Control | **T1071 – Application Layer Protocols (Pending Protocol Validation)** | `IonicLarge.exe` established outbound communication with a known malicious IP address, indicating potential command-and-control activity. |
+
+### ATT&CK Mapping Notes
+
+The techniques above are based on observed endpoint behavior, command-line activity, registry modifications, and network communication identified during the investigation. While these behaviors align with known MITRE ATT&CK techniques, additional telemetry such as network protocol details, persistence mechanisms, and attacker infrastructure analysis would be required to make more precise technique classifications.
+
+## Impact Assessment
 
 The endpoint should be considered potentially compromised based on the combination of malicious execution, credential-access activity, command-and-control communication, and attempts to weaken endpoint security.
 
 Potential impacts include:
 
-Credential exposure: The Web Browser Password Viewer may have accessed credentials stored within web browsers.
+**Credential exposure:** The Web Browser Password Viewer may have accessed credentials stored within web browsers.
 Loss of endpoint security: Microsoft Defender protections were modified, potentially allowing additional malicious activity to execute without detection.
 Command-and-control communication: The malicious outbound connection indicates that the compromised endpoint may have communicated with attacker-controlled infrastructure.
 Potential persistence or additional compromise: The presence of multiple suspicious binaries warrants additional investigation for persistence, lateral movement, and additional payloads.
@@ -202,69 +217,61 @@ Evidence destruction: Process termination and file deletion may have reduced ava
 
 Because the affected user is a Financial Analyst, additional investigation should determine whether sensitive financial, corporate, or authentication information was accessible from the compromised endpoint.
 
-Containment Recommendations
+## Containment Recommendations
 
 Based on the findings, the following actions would be appropriate for incident response:
-
-Isolate the affected endpoint from the network to prevent additional command-and-control communication or lateral movement.
-Preserve forensic evidence before performing extensive remediation, including relevant Windows Event Logs, Sysmon logs, memory, and disk artifacts where possible.
-Reset potentially exposed credentials, particularly browser-stored credentials and credentials used from the affected endpoint.
-Restore Microsoft Defender security configurations and verify that endpoint security protections are fully operational.
-Block the identified malicious IP address and file hashes through applicable security controls.
-Search the environment for the identified IOCs, including malicious hashes, filenames, IP addresses, registry modifications, and command-line activity.
-Investigate for persistence and lateral movement, including scheduled tasks, services, startup locations, additional user accounts, and authentication events.
-Perform a full endpoint security scan and forensic investigation to identify any remaining malware or evidence of compromise.
-If the integrity of the system cannot be confidently restored, reimage the endpoint following organizational incident-response procedures.
-Detection Opportunities
+- Isolate the affected endpoint from the network to prevent additional command-and-control communication or lateral movement.
+- Preserve forensic evidence before performing extensive remediation, including relevant Windows Event Logs, Sysmon logs, memory, and disk artifacts where possible.
+- Reset potentially exposed credentials, particularly browser-stored credentials and credentials used from the affected endpoint.
+- Restore Microsoft Defender security configurations and verify that endpoint security protections are fully operational.
+- Block the identified malicious IP address and file hashes through applicable security controls.
+- Search the environment for the identified IOCs, including malicious hashes, filenames, IP addresses, registry modifications, and command-line activity.
+- Investigate for persistence and lateral movement, including scheduled tasks, services, startup locations, additional user accounts, and authentication events.
+- Perform a full endpoint security scan and forensic investigation to identify any remaining malware or evidence of compromise.
+- If the integrity of the system cannot be confidently restored, reimage the endpoint following organizational incident-response procedures.
+- Detection Opportunities
 
 The investigation also identified several opportunities for improving defensive monitoring and detection capabilities.
 
-Process Execution
+## Process Execution
 
 Monitor Sysmon Event ID 1 for:
-
-Executables launched from user Temp directories.
-Randomly generated or suspicious executable names.
-Credential recovery and password-viewing utilities.
-Suspicious use of taskkill.exe.
-PowerShell processes with unusual command-line arguments.
-Microsoft Defender Modification
-
-Monitor for:
-
-Sysmon Event ID 13 registry modifications involving Windows Defender policy locations.
-PowerShell or WMIC activity interacting with MSFT_MpPreference.
-Attempts to modify or disable endpoint security protections.
-Changes to Defender exclusions or threat-response settings.
-Network Activity
+- Executables launched from user Temp directories.
+- Randomly generated or suspicious executable names.
+- Credential recovery and password-viewing utilities.
+- Suspicious use of taskkill.exe.
+- PowerShell processes with unusual command-line arguments.
+- Microsoft Defender Modification
 
 Monitor for:
+- Sysmon Event ID 13 registry modifications involving Windows Defender policy locations.
+- PowerShell or WMIC activity interacting with MSFT_MpPreference.
+- Attempts to modify or disable endpoint security protections.
+- Changes to Defender exclusions or threat-response settings.
+- Network Activity
 
-Outbound connections from suspicious processes.
-Connections to known malicious IP addresses.
-Temporary-directory executables establishing external network connections.
-Unusual network activity originating from user workstations.
-IOC-Based Detection
+Monitor for:
+- Outbound connections from suspicious processes.
+- Connections to known malicious IP addresses.
+- Temporary-directory executables establishing external network connections.
+- Unusual network activity originating from user workstations.
+- IOC-Based Detection
 
 The following indicators could be added to threat-hunting and detection workflows:
-
-MD5:
-7165E9D7456520D1F1644AA26DA7C423
-
-Malicious IP:
-2[.]56[.]59[.]42
+- MD5: 7165E9D7456520D1F1644AA26DA7C423
+- Malicious IP: 2[.]56[.]59[.]42
 
 Suspicious binaries:
-11111.exe
-IonicLarge.exe
-PalitExplorer.exe
+- 11111.exe
+- IonicLarge.exe
+- PalitExplorer.exe
 
 Registry:
-HKLM\SOFTWARE\Policies\Microsoft\Windows Defender
+- HKLM\SOFTWARE\Policies\Microsoft\Windows Defender
 
 These indicators should be used in combination with behavioral detections rather than relied upon exclusively, as attackers can easily change filenames, hashes, and infrastructure.
 
-Lessons Learned
+## Lessons Learned
 
 This investigation demonstrated the importance of correlating multiple sources of endpoint telemetry rather than investigating individual events in isolation.
 
@@ -272,14 +279,15 @@ Several individual events could potentially appear benign when viewed separately
 
 Key takeaways include:
 
-Sysmon provides valuable endpoint visibility for process execution, network connections, and registry activity.
-Command-line analysis can reveal attacker behavior that may not be immediately apparent from process names alone.
-Threat intelligence can help validate suspicious indicators, but reputation data should be correlated with internal telemetry before reaching a conclusion.
-Defense evasion activity is an important indicator of compromise. Attempts to disable or modify security controls should receive immediate attention.
-IOC correlation strengthens investigations. Connecting a suspicious process to a malicious IP address and security-control modifications provided stronger evidence of compromise than any single indicator alone.
-Detection should focus on behavior as well as known IOCs, since attackers can change filenames, hashes, and infrastructure.
-Incident documentation is an important SOC skill. Recording the investigation methodology, evidence, findings, and recommended actions makes the investigation reproducible and easier to communicate to other analysts or stakeholders.
-Overall Assessment
+- provides valuable endpoint visibility for process execution, network connections, and registry activity.
+- Command-line analysis can reveal attacker behavior that may not be immediately apparent from process names alone.
+- Threat intelligence can help validate suspicious indicators, but reputation data should be correlated with internal telemetry before reaching a conclusion.
+- Defense evasion activity is an important indicator of compromise. Attempts to disable or modify security controls should receive immediate attention.
+- IOC correlation strengthens investigations. Connecting a suspicious process to a malicious IP address and security-control modifications provided stronger evidence of compromise than any single indicator alone.
+- Detection should focus on behavior as well as known IOCs, since attackers can change filenames, hashes, and infrastructure.
+- Incident documentation is an important SOC skill. Recording the investigation methodology, evidence, findings, and recommended actions makes the investigation reproducible and easier to communicate to other analysts stakeholders.
+  
+## Overall Assessment
 
 The investigation identified a high-confidence endpoint compromise involving credential-access activity, malicious process execution, external command-and-control communication, modification of Microsoft Defender protections, and attempts to terminate processes and remove associated artifacts.
 
@@ -288,11 +296,11 @@ The combination of these behaviors indicates that the activity went beyond a sin
 
 
 
-AI Assistance Disclosure
+## AI Assistance Disclosure
 
 AI assistance was used during the documentation phase of this investigation. I independently performed the investigation, analyzed the Splunk logs, identified the indicators of compromise, and conducted the associated threat intelligence research.
 
-AI was used only to help organize and consolidate my findings, improve the presentation of the investigation, and assist with developing the Lessons Learned and Containtment Recommended Actions sections.
+AI was used only to help organize and consolidate my findings, improve the presentation of the investigation, and assist with developing the Lessons Learned and Containment Recommended Actions sections.
 
 The investigative findings, analysis, and conclusions presented in this write-up are based on my own work and understanding of the challenge.
 

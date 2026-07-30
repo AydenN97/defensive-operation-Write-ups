@@ -144,17 +144,17 @@ The investigation indicated that the attacker executed several commands within a
 
 Because Sysmon Event ID 1 records process creation and command-line activity, the investigation focused on process creation events and filtered for PowerShell executions.
 
-Splunk Query
+### Splunk Query
+```spl
 source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
 | stats count by CommandLine
 | search CommandLine="*powershell*"
-
+```
 Reviewing the resulting command-line activity revealed several PowerShell commands using WMIC to interact with the Windows Defender MSFT_MpPreference configuration:
-
-/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147735503 ThreatIDDefaultAction_Actions=6 Force=True
-/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737007 ThreatIDDefaultAction_Actions=6 Force=True
-/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737010 ThreatIDDefaultAction_Actions=6 Force=True
-/C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737394 ThreatIDDefaultAction_Actions=6 Force=True
+- /C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147735503 ThreatIDDefaultAction_Actions=6 Force=True
+- /C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737007 ThreatIDDefaultAction_Actions=6 Force=True 
+- /C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737010 ThreatIDDefaultAction_Actions=6 Force=True
+- /C powershell WMIC /NAMESPACE:\\root\Microsoft\Windows\Defender PATH MSFT_MpPreference call Add ThreatIDDefaultAction_Ids=2147737394 ThreatIDDefaultAction_Actions=6 Force=True
 
 Researching the command, it can be concluded that it modified Microsoft Defender's response configuration for specific threat IDs, indicating an attempt to alter how Defender handled detected threats.
 

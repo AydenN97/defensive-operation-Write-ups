@@ -15,7 +15,7 @@
 
 **Categories:** Blue Team / SIEM / Endpoint Investigation. 
 
-**Environment and Tools Used:** Linux / Splunk Search.
+**Environment and Tools Used:** Linux / Splunk
 
 
 ## Network Information ##  
@@ -103,4 +103,32 @@ We include this command in our search query and view the results. The user who l
 
 <img width="859" height="467" alt="Image" src="https://github.com/user-attachments/assets/2621cfc6-1179-48e4-a654-5f8f538189b8" />
 
-*Anwser:* haroon
+
+**Note:** The remaining questions are anwsered by the investigative workflow of question 4 and are supported by the screenshot above.
+
+*Answer:* haroon
+
+
+***Question 5: To bypass the security controls, which system process (lolbin) was used to download a payload from the internet?***
+
+*Answer:* Certutil.exe, as we discovered in question 4.
+
+
+***Question 6: What was the date that this binary was executed by the infected host? format (YYYY-MM-DD)***
+
+*Answer:* 2022-03-04 
+
+***Question 7: Which third-party site was accessed to download the malicious payload?***
+
+*Anwser:* controlc.com, we see the url in question when analyzing the certutil command. 
+
+***Question 8: What is the name of the file that was saved on the host machine from the C2 server during the post-exploitation phase?***
+
+*Anwser:* benign.exe 
+
+
+
+
+
+
+

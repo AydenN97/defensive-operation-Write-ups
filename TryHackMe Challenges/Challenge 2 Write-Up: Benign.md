@@ -52,13 +52,39 @@ The users per department are characterized below
 
 ***Question 2: Imposter Alert, There seems to be an imposter account observed in the logs, what is the name of that user?***
 
-*Investigative Workflow & Thinking:* An Imposter account being signaled instantly makes me want check back to my network information bulletin containing all the expected users and their usernames and check it against all username values extracted in the logs to see if there is any unordinary users present. To accomplish this I used the following query.
+*Investigative Workflow & Thought Process:* An Imposter account being signaled instantly makes me want check back to my network information bulletin containing all the expected users and their usernames and check it against all username values extracted in the logs to see if there is any unordinary users present. To accomplish this I used the following query.
 
 ### Splunk Query 
 ```spl 
 index=win_eventlogs| rare limit=20 UserName
 ```
-Focusing on the statistics, sure enough an anomaly pops its self up, an account named *Ame11a* which is clearly typo squatting the user 'Amelia' whose username is also simply 'Amelia'. 
+*Anwser:* Focusing on the statistics, sure enough an anomaly pops its self up, an account named *Ame11a* which is clearly typo squatting the user 'Amelia' whose username is also simply 'Amelia'. 
+
+<img width="1108" height="103" alt="Image" src="https://github.com/user-attachments/assets/f0d36e5a-d3df-4f90-85bc-99ddbb8a21a8" />
 
 
+***Question 3: Which user from the HR department was observed to be running scheduled tasks?***
 
+*Investigative Workflow & Thought Process:* Since the question ask which user from the HR Department, we can refer to our employee/network information to see that we should focus are query on three users initially, Chris, Haroon, and Diana. This narrows down the results to 3,373 events, far less noise. One of the fastest ways to honed in on schedule tasks would be by event ID's such as 4688, 4700, 4699. We unfortunately only have Event ID 4688 detected within the ingested logs which is any kind of process execution. One possible avenue I see is with the command line field, there are only 47 individual events, so noise wont be a factor in analyzing. Often malicious creation of schedule tasks involves some form of PowerShell, Command Prompt, Wscript, or MSHTA So I will add these to my query. 
+
+### Splunk Query
+```spl
+(
+    New_Process_Name="*\\powershell.exe"
+    OR New_Process_Name="*\\cmd.exe"
+    OR New_Process_Name="*\\wscript.exe"
+    OR New_Process_Name="*\\cscript.exe"
+    OR New_Process_Name="*\\mshta.exe")
+```
+ Unfortunately this query did not yield anything of note. Simplifying my search to only focus on the unique events from the commandline field, I did notice an interesting entry: */create /tn OfficUpdater /tr "C:\Users\Chris.fort\AppData\Local\Temp\update.exe" /sc onstart*. I researched this line and it defiantly lines up with the creation of a scheduled task. 
+ 
+ The following details that support that this is malicous are:
+ - Misspelled/masquerading task name: OfficUpdater resembles an Office updater.
+ - Executable in AppData\Local\Temp: legitimate startup tasks rarely need to execute binaries from a user's temporary directory.
+ - Persistence: /sc onstart establishes execution whenever the system starts.
+ - Potentially suspicious executable: update.exe is generic and should be investigated.
+ - User profile path: C:\Users\Chris.fort\... indicates the executable is located in a user's profile.
+
+Filtering on this specific command, the user who launched the task was Chris, who is identified as a user of the HR Department.
+
+*Answer:* Chris 

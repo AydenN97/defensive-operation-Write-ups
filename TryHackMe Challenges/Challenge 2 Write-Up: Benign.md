@@ -138,7 +138,27 @@ We include this command in our search query and view the results. The user who l
 *Answer:* hxxps://controlc[.]com/e4d11035 
 
 
+## Overall Assessment ##
 
+The investigation identified multiple indicators of compromise within the HR department, specifically involving the accounts Chris and Haroon. Analysis of the available Windows Security Event ID 4688 process creation logs revealed activity consistent with both persistence and Ingress Tool Transfer.
 
+The investigation initially identified an anomalous user account, Ame11a, which closely resembles the legitimate user Amelia and appears to be an impersonation or typo-squatting account. Additional investigation into the HR department identified a scheduled task created under the Chris account. The task was named OfficUpdater, a name that appears designed to resemble a legitimate Microsoft Office update mechanism. The task was configured to execute C:\Users\Chris.fort\AppData\Local\Temp\update.exe at system startup using /sc onstart. The combination of a masquerading task name, execution from a user's temporary directory, and startup-based execution represents suspicious activity consistent with an attempt to establish persistence.
 
+A separate and more significant indicator was identified under the Haroon account. The account executed certutil.exe with the -urlcache option to retrieve a file from controlc.com and save it locally as benign.exe. The use of certutil.exe to download an executable from an external file-sharing service is highly suspicious because certutil.exe is a legitimate Windows utility that can be abused as a Living off the Land Binary (LOLBin) to bypass security controls and transfer malicious files.
+
+The downloaded file was associated with the URL hxxps://controlc[.]com/e4d11035 and was executed on 2022-03-04. The recovered content also contained the challenge-specific malicious pattern THM{KJ&*H^B0}, further supporting that the downloaded file was not benign and was part of the simulated compromise.
+
+Based on the available evidence, the activity demonstrates a progression consistent with a compromise: suspicious account activity, scheduled-task-based persistence, execution of a legitimate Windows utility for payload transfer, communication with an external file-sharing service, and retrieval of an executable payload. The combination of these behaviors significantly increases the likelihood that the affected HR workstation was compromised rather than experiencing routine administrative activity.
+
+The investigation was limited to Windows process creation logs (Event ID 4688), meaning additional telemetry such as network connections, scheduled task creation events, PowerShell logging, Sysmon telemetry, and endpoint security logs was not available. Therefore, the full scope and impact of the compromise could not be determined from the provided dataset alone.
+
+## Conclusion ##
+
+The investigation determined that the HR environment contained multiple indicators consistent with malicious activity and that the workstation associated with the identified activity should be treated as potentially compromised.
+
+The strongest evidence was the execution of certutil.exe by Haroon to download benign.exe from controlc.com, combined with the subsequent identification of malicious challenge content within the downloaded file. Additionally, the Chris account was associated with the creation of a suspicious OfficUpdater scheduled task configured to execute an executable from the user's temporary directory at system startup. These findings demonstrate techniques commonly associated with persistence, masquerading, and Ingress Tool Transfer (MITRE ATT&CK T1105).
+
+This investigation helped me demonstrate and practice with using Splunk as a SIEM to filter large volumes of Windows event data, identify anomalous users and process activity, correlate suspicious command-line activity with specific users, and extract indicators of compromise. Event ID 4688 and analyzing events under the CommandLine field proved particularly useful for reconstructing process execution activity despite the limited telemetry available.
+
+From a defensive perspective, the affected host should be isolated and the identified files, accounts, scheduled tasks, and external connections should be investigated further. Additional endpoint and network telemetry should also be reviewed to determine whether the payload executed successfully, whether additional persistence mechanisms were established, and whether other systems or accounts were affected.
 

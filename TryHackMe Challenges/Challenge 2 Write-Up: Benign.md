@@ -101,5 +101,6 @@ The broader technique is downloading a file from an external location onto the c
 
 We include this command in our search query and view the results. The user who launches the command is haroon.
 
+<img width="859" height="467" alt="Image" src="https://github.com/user-attachments/assets/2621cfc6-1179-48e4-a654-5f8f538189b8" />
 
 *Anwser:* haroon

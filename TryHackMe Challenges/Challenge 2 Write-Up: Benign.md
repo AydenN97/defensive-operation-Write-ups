@@ -127,6 +127,16 @@ We include this command in our search query and view the results. The user who l
 *Anwser:* benign.exe 
 
 
+***Question 9: The suspicious file downloaded from the C2 server contained malicious content with the pattern THM{..........}; what is that pattern?***
+
+*Investigative Workflow & Thought Process:* View the site and grab the flag
+
+*Answer:* THM{KJ&*H^B0}
+
+***Question 10: What is the URL that the infected host connected to?***
+
+*Answer:* hxxps://controlc[.]com/e4d11035 
+
 
 
 

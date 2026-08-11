@@ -4,7 +4,7 @@
 
 ***Background:*** We are provided with the windows event logs belonging to the potentially compromised workstation. From the windows event logs, unfortunately only the process execution logs with Event ID:4688 are ingested into the index: **win_eventlogs.**
 
-***Objective:*** Identify and investigate the infected host by anwsering the guided questions.
+***Objective:*** Identify and investigate the infected host by progressing through the guided questions.
 
 ***Goals:***
 - Gain and demonstrate practical experience using Splunk Search as a Security Information and Event Management (SIEM) platform.
@@ -39,4 +39,11 @@ The users per department are characterized below
 - Deepak
 
 ## Start of Investigation ##
+
+***Question 1: How many logs were ingested from the month of March, 2022?***
+
+Workflow: We can use the Date Range widget to narrow down the results, setting the **Between* section to 03/01/2022 00:00:00:000-03/31/2022 23:59:59:999
+
+
+
 

@@ -38,5 +38,7 @@ Some details gathered:
 - Email address used to send the phishing email: *agriffin@bpakcaging[.]xyz*
 - Email Address of victim: *julianne.westcott@hotmail[.]*
 - Third-Party mail relay service used: *elasticemail*
-- 
+
+Now we need analyze the attachment included in the email *Invoice.zip*, I uploaded the entire email, the headers to a tool known as message header analyzer for additional context.
+
 

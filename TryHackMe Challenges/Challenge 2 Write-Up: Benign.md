@@ -42,8 +42,23 @@ The users per department are characterized below
 
 ***Question 1: How many logs were ingested from the month of March, 2022?***
 
-Workflow: We can use the Date Range widget to narrow down the results, setting the **Between* section to 03/01/2022 00:00:00:000-03/31/2022 23:59:59:999
+*Investigative Workflow:* We can use the Date Range widget to narrow down the results, setting the **Between* section to 03/01/2022 00:00:00:000-03/31/2022 23:59:59:999.
 
+<img width="668" height="202" alt="Image" src="https://github.com/user-attachments/assets/1f592a52-98f0-41ea-94eb-179bc5e4388c" />
+
+*Answer:* Once the date range is set, Splunk tells us that **13,959** events have occurred.
+
+
+
+***Question 2: Imposter Alert, There seems to be an imposter account observed in the logs, what is the name of that user?***
+
+*Investigative Workflow & Thinking:* An Imposter account being signaled instantly makes me want check back to my network information bulletin containing all the expected users and their usernames and check it against all username values extracted in the logs to see if there is any unordinary users present. To accomplish this I used the following query.
+
+### Splunk Query 
+```spl 
+index=win_eventlogs| rare limit=20 UserName
+```
+Focusing on the statistics, sure enough an anomaly pops its self up, an account named *Ame11a* which is clearly typo squatting the user 'Amelia' whose username is also simply 'Amelia'. 
 
 
 

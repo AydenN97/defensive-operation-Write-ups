@@ -32,7 +32,7 @@ Detection Engineering Concepts
 
 Disclaimer
 
-write-ups are for educational purposes only and are based on legally authorized laThesebs provided by TryHackMe. They are intended to document my learning and should not be used to perform unauthorized activities.
+write-ups are for educational purposes only and are based on legally authorized labs provided by TryHackMe. They are intended to document my learning and should not be used to perform unauthorized activities.
 
 I am still a cybersecurity student at time of creation, and this repository reflects my ongoing learning journey. Some write-ups may be incomplete or updated over time as I continue to expand my knowledge and refine my investigative techniques.
 

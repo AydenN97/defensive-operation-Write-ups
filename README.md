@@ -15,7 +15,7 @@ A collection of defensive security labs, SOC investigations, threat-hunting exer
 
 ---
 
-## Areas Covered
+## Areas Hoping to Cover
 
 ### Security Operations Center (SOC)
 
@@ -59,7 +59,7 @@ A collection of defensive security labs, SOC investigations, threat-hunting exer
 
 ---
 
-## Tools Used
+## Tools Hoping to Use
 
 - Splunk
 - Microsoft Sentinel
@@ -77,7 +77,7 @@ A collection of defensive security labs, SOC investigations, threat-hunting exer
 
 ---
 
-## Investigation Methodology
+## Investigation Methodology May Take On
 
 1. **Alert Intake**
 2. **Initial Triage**
@@ -106,7 +106,7 @@ A collection of defensive security labs, SOC investigations, threat-hunting exer
 
 ---
 
-## Skills Demonstrated
+## Skills Looking to Demonstrate
 
 - Log Analysis
 - Threat Detection

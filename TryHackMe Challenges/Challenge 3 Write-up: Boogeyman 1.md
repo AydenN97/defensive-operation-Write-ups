@@ -22,8 +22,8 @@
 
 ***Goals:***
 - Gained familiarity in using Wireshark and TShark to determine if and to which extent is an particular endpoint compromised.  
-- Extract TTPs using Wireshark, TShark, and Linux command line tools
-- Demonstrate experience in using Wireshark and TShark.
+- Extract TTPs using Wireshark, TShark, and Linux command line tools.
+- Demonstrate experience in using Wireshark and TShark to find DNS exfiltration attempts.
 - Demonstrate skill and experience in analyzing a phishing email by analyzing headers and body of the email in the original HTML.
 
 
@@ -155,4 +155,25 @@ We are given a list of artifacts to find by our supervisor.
 - **Answer:  %p9^3!lL^Mz47E2GaT^y**
 
 <img width="1059" height="526" alt="image" src="https://github.com/user-attachments/assets/9235a645-d934-4094-9ef4-2fde1a735c33" />
+
+**Question 5: What is the credit card number stored inside the exfiltrated file?**
+- We know that the threat actor used DNS to exfiltrate the file, so we need to reconstruct and extract the exfiltrated data. The hint indicates that this task is best completed using TShark.
+TShark is a command-line tool, so we will perform the analysis from the command line.
+First, we use TShark to extract all DNS queries to the suspicious domain, bpakcaging.xyz, which was identified as the C2 server.
+
+- We use the following command: ```tshark -r capture.pcapng -Y 'dns.qry.name contains "bpakcaging.xyz"' -T fields -e dns.qry.name > dns_queries.txt```
+
+- We then review the results by filtering for the encoded subdomains: ```awk -F. '{print $1}' dns_queries.txt```
+
+- After filtering the subdomains, I recognized that the data appeared to be hex encoded. I decoded it from hex, but the resulting data did not reveal anything useful. I then pivoted by filtering the DNS query value instead of the subdomain value. I also narrowed the results to DNS query type 1 (A records) and DNS queries where dns.flags.response == 0, indicating DNS requests rather than responses.
+
+- I used the following command: ```tshark -r capture.pcapng -Y "(((dns) && (dns.qry.type == 1)) && (dns.flags.response == 0)) && (ip.dst == 167.71.211.113)" | cut -d ' ' -f 10```
+
+- I saved the output to a separate file and converted the data from hex.
+After decoding the data, it reconstructed into a KeePass vault file. I then used the password discovered in Question 4 to open the vault and retrieve the stored credit card number.
+- **Answer: 4024007128269551**
+
+
+<img width="1593" height="301" alt="image" src="https://github.com/user-attachments/assets/3ac35da4-d6d0-47dd-bee7-23228b63e8fb" />
+
 

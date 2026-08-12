@@ -84,7 +84,9 @@ Our supervisor has given us an helpful investigative guide to follow for task 2.
 - Since the given data is JSON, we can parse it in CLI using the jq command.
 - Note that some logs are redundant and do not contain any critical information; hence can be ignored.
 
-We will use jq to parse and analyze the PowerShell.json artifact that we are provided
+We will use jq to parse and analyze the PowerShell.json artifact that we are provided. 
+
+First thought process is to look for the suspicious domain found when we decoded the base64 command in task 1. To accomplish this, I used the following command: *cat powershell.json | jq | grep -i bpakcaging.xyz* 
 
 
 

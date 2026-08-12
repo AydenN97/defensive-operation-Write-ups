@@ -72,3 +72,20 @@ The decoded payload demonstrates several suspicious behaviors:
 
 The combination of an email-delivered .lnk file, hidden PowerShell execution, Base64 obfuscation, and retrieval of a remote payload is highly suspicious and indicates that the shortcut was likely intended to serve as an initial execution mechanism for additional malicious code.
 
+<img width="1566" height="163" alt="image" src="https://github.com/user-attachments/assets/c0ca83e7-b6f9-4a36-b9a2-8953572c25aa" />
+<img width="1532" height="568" alt="image" src="https://github.com/user-attachments/assets/122198a6-5c5a-4d77-9bab-bd0a5d9fef88" />
+
+
+### Task 2: Endpoint Security
+
+We now can conclude that the PowerShell command observed in the first task signaled initial execution and compromise of this workstation. Further actions along the kill chain are most likely after initial access. 
+Our supervisor has given us an helpful investigative guide to follow for task 2.
+- Using the previous findings, we can start our analysis by searching the execution of the initial payload in the PowerShell logs.
+- Since the given data is JSON, we can parse it in CLI using the jq command.
+- Note that some logs are redundant and do not contain any critical information; hence can be ignored.
+
+We will use jq to parse and analyze the PowerShell.json artifact that we are provided
+
+
+
+

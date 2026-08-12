@@ -99,6 +99,19 @@ Next, Our supervisor instructs us to find the enumeration tool that the attacker
 
   <img width="886" height="355" alt="image" src="https://github.com/user-attachments/assets/0b68d4c3-7211-4afa-a589-f30b5f8db5a1" />
 
+Next, our supervisor informs us to track down the file accessed by the downloaded *sq3.exe*. 
+I isolate the results to anything including the binary: 
+```cat powershell.json | jq | grep -i "sq3.exe"``` This commands yields nothing of interests. 
+The hint tell us to sort by timestamp in order to piece together the chain of events which should give us the answer, so I run the command ```cat poowershell.json | jq | grep -i "sq3.exe" | jq -s -c 'sort by(.Timestamp) | .[] | {ScriptBlockText}' | grep -v null | grep -v Set-StrickMode``` We clean up the noise by filtering out null and Set-StrictMode events.
+
+ **Findings**
+ - The command yields us a suspicous looking line ```{"ScriptBlockText":".\\Music\\sq3.exe AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```
+ - That is part of the full file path for the file accessed by sq3.exe.
+ - The other part is C:\Users\J.westcott to make the full path: ```C:\\Users\\J.westcott\\AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```
+
+   
+
+
 
 
 

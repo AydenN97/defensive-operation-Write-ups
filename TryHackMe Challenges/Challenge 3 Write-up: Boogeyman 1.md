@@ -125,8 +125,18 @@ We are given a list of artifacts to find by our supervisor.
 
 **Artifact Search**
 
-Find the software used by the attacker to host its presumed file/payload server.
-- 
+*Question 1: Find the software used by the attacker to host its presumed file/payload server.*
+- After uploading the PCAP to Wireshark, we start by applying some filters to lower the noise.
+- Remebering that we were able to extract the IP address of the attacker's potential C2 Server ```167[.]71[.]211[.]113``` and that the sequence likely involves http. I craft the following query ```http && ip.addr == 167[.]71[.]211[.]13```.
+- Looking at the headers of the request to the malicious IP address, we see that the server is hosted via *Python*.
+- **Answer: Python**
+
+<img width="1162" height="554" alt="image" src="https://github.com/user-attachments/assets/cd7ce2b1-23a2-4020-a654-7362253ec595" />
+  
+
+*Question 2: What HTTP method is used by the C2 for the output of the commands executed by the attacker?*
+- **Answer: POST**
+
 
 
 

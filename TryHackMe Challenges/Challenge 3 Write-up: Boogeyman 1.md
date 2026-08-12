@@ -105,9 +105,14 @@ I isolate the results to anything including the binary:
 The hint tell us to sort by timestamp in order to piece together the chain of events which should give us the answer, so I run the command ```cat poowershell.json | jq | grep -i "sq3.exe" | jq -s -c 'sort by(.Timestamp) | .[] | {ScriptBlockText}' | grep -v null | grep -v Set-StrickMode``` We clean up the noise by filtering out null and Set-StrictMode events.
 
  **Findings**
- - The command yields us a suspicous looking line ```{"ScriptBlockText":".\\Music\\sq3.exe AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```
+ - The command yields us a suspicous looking line ```{"ScriptBlockText":".\\Music\\sq3.exe AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
  - That is part of the full file path for the file accessed by sq3.exe.
- - The other part is C:\Users\J.westcott to make the full path: ```C:\\Users\\J.westcott\\AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```
+ - The other part is C:\Users\J.westcott to make the full path: ```C:\\Users\\J.westcott\\AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
+ - The file uses the software ```Microsoft Sticky Notes```.
+ - Further down in the results, we see that a file ```protceted_data.kdbx``` is exfiltrated to the following location ```167[.]71[.]211[.]113```.
+ - The full attack sequence is illustrated in the image below
+
+<img width="1545" height="584" alt="image" src="https://github.com/user-attachments/assets/18d465dd-306b-49b0-b98a-1c15d3daac9d" />
 
    
 

@@ -138,5 +138,21 @@ We are given a list of artifacts to find by our supervisor.
 - **Answer: POST**
 
 
+*Question 3: What is the protocol used during the exfiltration activity?
+- We filter for all traffic outbound to 167[.]71[.]211[.]113. Scanning the results, straight away I see evidence of DNS exfiltration.
+- We have numerous queries with lengths greater than 60 as well as long subdomains and unusual query names.
+- The queries follow a beaconing type of behavior
+- **Answer: The most likely protocol is DNS, the signs are overwhelmingly present. 
 
+<img width="1550" height="238" alt="image" src="https://github.com/user-attachments/assets/a3fbc478-0a77-46a6-a89b-d8b2dd8641c3" />
+
+
+*Question 4: What is the password of the exfiltrated file?*
+- I had to used the hint for this question, which said that the password was stored in database file by the attacker using the SQ3.exe binary.
+- If we remember that file was called plum.sqlite
+- We search for the file and find the url-encoded form which contains what appears to be decimal encoded data.
+- I decode it with cyberchef to get the password
+- **Answer:  %p9^3!lL^Mz47E2GaT^y**
+
+<img width="1059" height="526" alt="image" src="https://github.com/user-attachments/assets/9235a645-d934-4094-9ef4-2fde1a735c33" />
 

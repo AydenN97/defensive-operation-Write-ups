@@ -53,5 +53,29 @@ Next we pivot towards analyzing the malicious document
 
 - The full path of the payload is ```C:\ProgramData\update.js```
 
+## Task 2: Memory Dump Analysis
 
-  
+We now pivot to analyzing the memory dump with Volatility in Task 2, which will also be our final task. We have collected all the evidence we can from the email and the malicious attachment. We now will analyze the memory dump of the workstation to get a grasp of what the downloaded payload did, mainly looking for behaviors consistent with further down the kill chain stages such as persistence, collection, and exfiltration.  
+
+A good first step is to get the PID of the process that executed the payload.
+- I believe this command ```vol -f WKSTN-2961.raw windows.pslist.PsList``` should give us a full process list to be able to locate the PID of the process that executed the stage 2 payload
+- (If I remember correctly, the executable responsible for launching the payload was ```wscript.exe```)
+- We locate wscript.exe and get a PID of **4260** and a PPID of **1124**
+
+<img width="495" height="61" alt="image" src="https://github.com/user-attachments/assets/1e0957da-7a2e-4d1d-8ef1-19c603b762a8" />
+
+The final thing I do is run a few Volatility plugins that would be useful for this investigation, such as malfind, cmdline, netscan, filescan, etc., to see what IOCs I can find.
+Final results gathered: 
+- Executables already discovered such as ```Wscript.exe``` and ```update.js```.
+- Looking back at the PsList scan results, I did see two processes of note ```updater.exe and DumpIT.exe```.
+- When running the cmdline plugin, I did find the path for which updater.exe was executed ```C:\Windows\Tasks\updater.exe``` as well as the path of the malicious email. ```C:\Users\maxine.beck\AppData\Local\Microsoft\Windows\INetCache\Content.Outlook\WQHGZCFI\Resume_WesleyTaylor (002).doc```.
+- When running the netscan plugin, I found the IP address and Port that updater.exe establishes, presumably the C2 server connection ```128[.]199[.]95[.]189:8080```.
+- One final task by our supervisor is to find the scheduled task created by the attacker. This took me some research as the previous plugins that I had used led me nowhere. I had an inclimination that I needed to grep for schtasks, but I did not know how to form the command. With some research I found this command ```strings vol -f WKSTIN-2961.raw | grep -i schtasks``` to work. I had been missing the strings at the beginning of the command.
+- The resulting schedule task was found ```schtasks /Create /F /SC DAILY /ST 09:00 /TN Updater /TR 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NonI -W hidden -c \"IEX ([Text.Encoding]::UNICODE.GetString([Convert]::FromBase64String((gp HKCU:\Software\Microsoft\Windows\CurrentVersion debug).debug)))\"'```. 
+
+<img width="1210" height="37" alt="image" src="https://github.com/user-attachments/assets/ccb36bb7-8678-4d59-827f-f5430a12d279" />
+
+<img width="1578" height="309" alt="image" src="https://github.com/user-attachments/assets/0f77d44d-8c0d-4854-9df3-6b4dd076cd0d" />
+
+<img width="1578" height="571" alt="image" src="https://github.com/user-attachments/assets/07868d1c-4569-48bb-9f84-d593dceaac51" />
+

@@ -81,6 +81,13 @@ Final results gathered:
 
 ## Conclusion
 
+This investigation demonstrated how the Boogeyman threat actor group used a phishing email and malicious Microsoft Word document to compromise Maxine's workstation and establish further access. By analyzing the email and its attachment, I identified the malicious document, calculated its MD5 hash, and used Olevba to uncover suspicious VBA macros. The macro analysis revealed a connection to a malicious URL that downloaded update.js, which was subsequently executed using wscript.exe.
+
+Memory analysis with Volatility provided additional insight into the attack chain. I identified the wscript.exe process responsible for executing the payload, as well as additional suspicious processes including updater.exe and DumpIT.exe. The investigation also uncovered the execution path of updater.exe, the location of the malicious Word document, and a network connection from updater.exe to the suspected C2 server at 128[.]199[.]95[.]189:8080.
+
+Finally, I identified a scheduled task named Updater that was created to execute a hidden PowerShell command. The command retrieved and decoded data stored in the Windows Registry before executing it, demonstrating the attacker's use of scheduled tasks, PowerShell, Base64 encoding, and registry-based storage to maintain persistence and execute malicious code.
+
+Overall, this investigation provided a clear view of the Boogeyman group's attack chain, from the initial phishing email and malicious attachment to payload execution, C2 communication, and persistence. The investigation also reinforced the importance of combining email analysis, malware analysis, memory forensics, and command-line tools when investigating a compromised Windows system. These techniques allowed me to identify multiple indicators of compromise and better understand the TTPs used throughout the attack.
 
 
 

@@ -8,7 +8,7 @@
 
 
 ***Additional Details:***
-- The phishing email, common by this threat actor, was sent to CEO Evan Hutchinson who *informed the security team that he had clicked on the attachment*.
-- This is indicative of spear phishing as before, Boogeyman targeted regular employees, not high ranking personnel.  
-- Our team has informed us that the compromise likely occurred between August 29 and August 30, 2023.
-- 
+- The phishing email, a tactic commonly used by the Boogeyman threat actor, was sent to CEO Evan Hutchinson, who subsequently informed the security team that he had clicked on the attachment.
+- This activity is indicative of spearphishing, specifically because the threat actor targeted a high-ranking individual. In previous Boogeyman activity, the threat actor primarily targeted regular employees rather than  senior leadership.
+- The security investigated the CEO's workstation where they discovered an ISO payload inside the suspected malicious attachment, which was found in the downloads folder of the CEO.
+- The security team determined that the incident likely occurred between August 29 and August 30, 2023, establishing the approximate timeframe for the investigation.

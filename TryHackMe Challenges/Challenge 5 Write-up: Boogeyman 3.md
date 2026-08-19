@@ -64,12 +64,21 @@
 - We see the ```review.dat``` file created in task 3 being executed.
 
 
-**Task 5: The stage 1 payload established a persistence mechanism. Find the name of the scheduled task created by the malicious script
+**Task 5:** The stage 1 payload established a persistence mechanism. Find the name of the scheduled task created by the malicious script
 - The file ```review.dat``` was created as a scheduled task, evident by the screenshot below.
 
 <img width="1199" height="63" alt="image" src="https://github.com/user-attachments/assets/cece8ae5-a40c-4232-95eb-b3d4936e98bb" />
 
-**Task 6:
-   
+**Task 6:** The execution of the implanted file inside the machine has initiated a potential C2 connection. What is the IP and port used by this connection?
+- We start by narrowing our search down to any events involving our ```review.dat```.
+- Luckily, there are only 12 hits, so using other filters will be unnecessary.
+- looking through the results I did not see any evidence of C2 connection, but I did notice powershell.exe usage.
+- I decided to narrow down the search results based on event.code 3 as well as Powershell.exe.
+- Kibana Query: ```_index:winlogbeat-* and process.name: "powershell.exe" and event.code: "3"```.
+- Analyzing the results, there were over 6500 events related to an destination IP address of ```165[.]232[.]170[.]151``` and port ``80``.
+
+<img width="505" height="497" alt="image" src="https://github.com/user-attachments/assets/73c8eaac-7aaf-4973-a95f-803635a2b675" />
+
+
 
 

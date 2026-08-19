@@ -8,7 +8,7 @@
 
 ***Objective:*** Analyze the TTPs used by the threat actor group known as Boogeyman by performing forensic analysis on a copy of a phishing email and a memory dump file. 
 
-**Environment:** Linux 
+***Environment:*** Linux 
 
 **Tools and Technologies Used:**
 - Volatility

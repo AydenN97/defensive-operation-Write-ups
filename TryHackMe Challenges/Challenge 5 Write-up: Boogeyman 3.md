@@ -30,7 +30,7 @@
 - Improve report writing skills.
 
 
-# Start of Investigation 
+# Investigation 
 
 **Task 1:** Enter Kibana through our Elastic Stack environment to access the necessary logs and establish the investigation scope.
 - Before beginning the investigation, we must first set the appropriate time range. The security team identified the relevant timeframe as ```August 29, 2023, through August 30, 2023.```

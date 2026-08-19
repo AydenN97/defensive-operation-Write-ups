@@ -152,3 +152,44 @@
 
 # Conclusion
 
+Conclusion
+
+The investigation successfully identified the complete attack chain used by the Boogeyman threat actor, beginning with a targeted phishing email and ultimately resulting in the deployment of ransomware. The attack began when CEO Evan Hutchinson opened a malicious attachment disguised as ProjectFinancialSummary_Q3.pdf. The attachment used a double file extension, ProjectFinancialSummary_Q3.pdf.hta, and was executed through mshta.exe, allowing the attacker to establish the initial foothold on the workstation.
+
+From there, the stage 1 payload copied review.dat into the victim's temporary directory and executed it through rundll32.exe. The payload established persistence through a scheduled task and initiated network communication with the attacker's infrastructure. The attacker then performed host reconnaissance, discovered that the compromised account had local administrator privileges, and leveraged fodhelper.exe to bypass User Account Control (UAC).
+
+After obtaining elevated privileges, the attacker downloaded Mimikatz from GitHub and used it to dump credentials from the compromised workstation. The recovered itadmin credentials were then used to access another workstation. The attacker enumerated remote file shares and accessed IT_Automation.ps1 on WKSTN-1327, which exposed another set of credentials belonging to QUICKLOGISTICS\allen.smith. These credentials enabled further lateral movement to the second workstation, where the attacker operated through wsmprovhost.exe, indicating the use of Windows Remote Management (WinRM).
+
+The attacker continued credential theft on the second workstation, obtaining the NTLM hash for the local administrator account. After subsequently gaining access to the domain controller, the attacker performed a DCSync attack against the backupda account, demonstrating that the compromise had escalated from a single workstation to the broader Active Directory environment.
+
+Finally, the attacker downloaded ransomboogey.exe, the ransomware payload, from their external infrastructure. This indicates that the objective of the intrusion progressed beyond credential theft and reconnaissance to the deployment of ransomware across the compromised environment.
+
+Overall, the investigation demonstrates a complete intrusion chain involving spearphishing, malicious file execution, LOLBin abuse, persistence, C2 communication, UAC bypass, credential dumping, lateral movement, remote administration, DCSync, and ransomware deployment. 
+
+# Artifacts Found
+| Task |	Artifact / Finding |
+|---|---|
+| Initial Access Method |	`ProjectFinancialSummary_Q3.pdf.hta` |
+| Initial Execution	| `mshta.exe` |
+| Initial Process ID	| `6392` |
+| Stage 1 Implant |	`review.dat` |
+| Implant Location |	`C:\Users\EVAN~1.HUT\AppData\Local\Temp\review.dat` |
+| Execution Method |	`rundll32.exe D:\review.dat,DllRegisterServer` |
+| UAC Bypass Tool |	`fodhelper.exe` |
+| C2 IP |	`165[.]232[.]170[.]151` |
+| C2 Port |	`80` |
+| Credential-Dumping Tool | `Mimikatz` |
+| Mimikatz Download | `https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip` |
+| First Compromised Credential | 	`itadmin` |
+| First NTLM Hash |	`F84769D250EB95EB2D7D8B4A1C5613F2` |
+| Remote Share |	`WKSTN-1327.quicklogistics.org\ITFiles` |
+| Accessed File |	`IT_Automation.ps1` |
+| Second Credential |	`QUICKLOGISTICS\allen.smith` |
+| Second Compromised | `Host	WKSTN-1327` |
+| Suspicious Parent Process |	`wsmprovhost.exe` |
+| Second Dumped Account |	`administrator` |
+| Second NTLM Hash |	`00f80f2538dcb54e7adc715c0e7091ec` |
+| Compromised Domain Controller |	`DC01.quicklogistics.org` |
+| DCSync Target Account Enumerated |	`backupda` |
+| Ransomware |	`ransomboogey.exe` |
+| Ransomware Download Location |	`hxxp://ff[.]sillytechninja[.]io/ransomboogey[.]exe` |

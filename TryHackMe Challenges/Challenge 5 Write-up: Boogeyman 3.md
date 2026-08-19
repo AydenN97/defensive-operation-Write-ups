@@ -14,7 +14,7 @@
 - The security team determined that the incident likely occurred between August 29 and August 30, 2023, establishing the approximate timeframe for the investigation.
 
 
-***Objective:*** Analyze and Assess the impact of the compromise of the CEO's Workstation and determine if the threat actor was able to compromised other machines within the network.
+***Objective:*** Analyze and Assess the overall impact of the compromise of the CEO's Workstation by collecting Artifacts (Indicators of compromise). Determine if the threat actor was able to compromised other machines within the network (Lateral Movement).
 
 ***Environment:*** Analysis will be conducted via a Linux machine. 
 

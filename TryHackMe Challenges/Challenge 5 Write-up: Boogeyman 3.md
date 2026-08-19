@@ -35,6 +35,25 @@
 **Task 1:** Enter Kibana through our Elastic Stack environment to access the necessary logs and establish the investigation scope.
 - Before beginning the investigation, we must first set the appropriate time range. The security team identified the relevant timeframe as ```August 29, 2023, through August 30, 2023.```
 
+
 <img width="441" height="63" alt="image" src="https://github.com/user-attachments/assets/5705d104-3ad1-4593-bd1a-0bdd0931f73f" />
 
-**Task 2:** 
+
+
+**Task 2:** Find the process that executed the initial stage 1 payload.
+- We know that our victim, CEO Evan Hutchinson,  had clicked on the likely malicious attachment when he received the email. The security team, upon investigating the workstation of the victim, discovered the attachment in the Downloads folder of the victim's account. The attachment is supposedly a pdf file named ```ProjectFinancialSummary_Q3.pdf```. Hutchinson had reported to the security team that the email appeared suspicious.
+- With these facts in mind, my initial step will be simply to search for all log events including this file and process execution. Kibana Query ```_index:winlogbeat-* and ProjectFinancialSummary_Q3.pdf and event.code:"1"```.
+- Luckily they are only 4 hits, limiting the noise greatly. 
+- In the first of the 4 log events, we see that commonly named LOL Binary ```MSHTA.EXE``` is used to execute the suspicious file, which interestingly we learned is a double file extension. ```ProjectFinancialSummary_Q3.pdf.hta```.
+- Double file extensions are a common tactic used by threat actors to hide a dangerous program and trick users into opening it. 
+- The process ID for this event is **6392**.
+
+<img width="1250" height="149" alt="image" src="https://github.com/user-attachments/assets/7faeadd4-80f2-4356-8227-8641c553413d" />
+
+**Task 3:** The stage 1 payloads implants a file to another location, find it. 
+- The very next log entry, we now analyze ```ProjectFinancialSummary_Q3.pdf.hta``` as the parent process for which it launches a process by named of ```xcopy.exe```.
+- ```xcopy.exe``` runs the following command ```C:\Windows\System32\xcopy.exe, /s, /i, /e, /h, D:\review.dat, C:\Users\EVAN~1.HUT\AppData\Local\Temp\review.dat```.
+- This command implants a file to Hutchinson's temp folder, a common location for malware to hide and remain persistent.
+
+<img width="1125" height="247" alt="image" src="https://github.com/user-attachments/assets/b30b1be6-992e-4574-a563-865d60d3673f" />
+

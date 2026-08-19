@@ -104,7 +104,7 @@
 <img width="1003" height="256" alt="image" src="https://github.com/user-attachments/assets/0b813204-c744-4b20-8cb4-e8ada7523648" />
 
 
-**Task 10:** Using the new credentials, the attacker attempted to enumerate accessible file shares. Find the name of the file accessed by the attacker from a remote share?
+**Task 10:** Using the new credentials, the attacker attempted to enumerate accessible file shares. Find the name of the file accessed by the attacker from a remote share.
 - This task requires looking at all the PowerShell related logs by the host: ```WKSTN-0051.quicklogistics.org```.
 - We use the following Kibana query: ```_index:winlogbeat-* and host.name: "WKSTN-0051.quicklogistics.org" and powershell.exe```.
 - Going down the list of executed PowerShell commands, I eventually come across the following line ```C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -c cat FileSystem::\\WKSTN-1327.quicklogistics.org\ITFiles\IT_Automation.ps1```.
@@ -113,7 +113,42 @@
 <img width="1570" height="520" alt="image" src="https://github.com/user-attachments/assets/76774123-6f6b-4b25-ad4a-f04cecd68b3d" />
 
 
+**Task 11:** After getting the contents of the remote file, the attacker used the new credentials to move laterally. Find the new set of credentials discovered by the attacker.
+- The next PowerShell log entry immediately after task 10 reveals the new set of credentials.
+- Username: ```QUICKLOGISTICS\allen.smith``` and Password:```Tr!ickyP@ssw0rd987```.
+
+<img width="1250" height="106" alt="image" src="https://github.com/user-attachments/assets/09c4f9bf-7d76-4b72-a618-674531076e65" />
+
+**Task 12:** Using the malicious command executed by the attacker from the first machine to move laterally, Find the parent process name of the malicious command executed on the second compromised machine.
+- In the last task, we found that the threat actor used the credentials to move to a new host with the name of ```WKSTN-1327```.
+- We make a query that narrows the search by this host and event code 1.
+- We find an executable named ```wsmprovhost.exe``` that launched many commands.
 
 
+**Task 13:** The attacker then dumped the hashes in this second machine. Find the username and hash of the newly dumped credentials.
+- The PowerShell logs reveal that the threat actor dumped the user: ```administrator``` and retrieved the ntlm hash of ```00f80f2538dcb54e7adc715c0e7091ec```.
+
+
+<img width="1571" height="511" alt="image" src="https://github.com/user-attachments/assets/97b3c15a-a34b-491d-9fae-e348529ce095" />
+
+
+**Task 14:** According to the security team, after gaining access to the domain controller, the attacker attempted to dump the hashes via a DCSync attack. Find the account that the attacker dumps.
+- We filter the results based on the domain controller - ```DC01.quicklogistics.org``` and ```mimikatz``` since mimikatz was the tool that the threat actor used before to dump the hashes. It is likely he uses it here for the DCSync attack.
+- Kibana Query: ```_index:winlogbeat-* and host.name:"DC01.quicklogistics.org" and Mimikatz.exe```.
+- We then filter the logs by process.command_line where we see the following line: ```"C:\Users\Administrator\Documents\mimi\x64\mimikatz.exe" "lsadump::dcsync /domain:quicklogistics.org /user:backupda" exit```.
+- Our account is **backupda**.
+
+<img width="1133" height="52" alt="image" src="https://github.com/user-attachments/assets/e3c20e4c-ad25-471c-bc85-00c7e81ba047" />
+
+
+**Final Task:** Find the ransomware downloaded by the attacker.
+- The final task and artifact were relatively easy to identify due to the file's naming convention. During the investigation of the other tasks, I came across a file named ransomboogey.exe, which was the ransomware executable.
+- In a real-world investigation, the malicious file would likely not be named so explicitly or be as easily identifiable. Nevertheless, I was able to locate the file by searching the PowerShell logs associated with the initially compromised host.
+- The attacker downloads the ransomware from this link: ```hxxp://ff[.]sillytechninja[.]io/ransomboogey[.]exe```
   
+<img width="1200" height="72" alt="image" src="https://github.com/user-attachments/assets/dad86b0d-f4c4-4825-9479-b01248ca793b" />
+
+***This concludes the investigation***
+
+# Conclusion
 

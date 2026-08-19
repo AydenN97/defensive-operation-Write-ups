@@ -80,5 +80,13 @@
 <img width="505" height="497" alt="image" src="https://github.com/user-attachments/assets/73c8eaac-7aaf-4973-a95f-803635a2b675" />
 
 
+**Task 7:** The attacker has discovered that the current access is a local administrator. Find the name of the process used by the attacker to execute a UAC bypass.
+- While working through task 5, I had observed ```review.dat``` enumerating the administrators group using ```net.exe```.
+- The very next log entry included the execution of a file named ```fodhelper.exe```.
+- researching ways attackers can accomplish a UAC bypass, the fodhelper executable came up as a common technique.
+
+<img width="519" height="219" alt="image" src="https://github.com/user-attachments/assets/dc28a7ae-ad13-4da2-8125-c2c283ee0d3c" />
+<img width="1239" height="139" alt="image" src="https://github.com/user-attachments/assets/f95167da-21af-4c4e-bf32-0560996a1ed0" />
+
 
 

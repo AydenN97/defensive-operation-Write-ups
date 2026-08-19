@@ -69,7 +69,7 @@
 
 <img width="1199" height="63" alt="image" src="https://github.com/user-attachments/assets/cece8ae5-a40c-4232-95eb-b3d4936e98bb" />
 
-**Task 6:** The execution of the implanted file inside the machine has initiated a potential C2 connection. What is the IP and port used by this connection?
+**Task 6:** The execution of the implanted file inside the machine has initiated a potential C2 connection. Find the IP and port used by this connection.
 - We start by narrowing our search down to any events involving our ```review.dat```.
 - Luckily, there are only 12 hits, so using other filters will be unnecessary.
 - looking through the results I did not see any evidence of C2 connection, but I did notice powershell.exe usage.
@@ -88,5 +88,20 @@
 <img width="519" height="219" alt="image" src="https://github.com/user-attachments/assets/dc28a7ae-ad13-4da2-8125-c2c283ee0d3c" />
 <img width="1239" height="139" alt="image" src="https://github.com/user-attachments/assets/f95167da-21af-4c4e-bf32-0560996a1ed0" />
 
+**Task 8:** Having a high privilege machine access, the attacker attempted to dump the credentials inside the machine. Find the GitHub link used by the attacker to download a tool for credential dumping
+- We search for any instance of GitHub within the logs.
+- We find that the threat actor used Powershell.exe to download mimikatz from GitHub.
+- Full link: ```https://github.com/gentilkiwi/mimikatz/releases/download/2.2.0-20220919/mimikatz_trunk.zip```.
+- The Mimikatz tools was saved under ```mimi.zip```.
+
+  <img width="1569" height="561" alt="image" src="https://github.com/user-attachments/assets/b6e8ba3e-7f02-4abd-9f24-34861ef52127" />
 
 
+**Task 9:** After successfully dumping the credentials inside the machine, the attacker used the credentials to gain access to another machine. Find the username and hash of the new credential pair.
+- We search for all logs with the instance of ```Mimikatz.exe```.
+- Searching the results, I find the user account ```itadmin``` and its ntlm hash ```F84769D250EB95EB2D7D8B4A1C5613F2```. 
+
+<img width="1003" height="256" alt="image" src="https://github.com/user-attachments/assets/0b813204-c744-4b20-8cb4-e8ada7523648" />
+
+
+**Task 10:** 

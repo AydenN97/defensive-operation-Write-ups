@@ -104,4 +104,16 @@
 <img width="1003" height="256" alt="image" src="https://github.com/user-attachments/assets/0b813204-c744-4b20-8cb4-e8ada7523648" />
 
 
-**Task 10:** 
+**Task 10:** Using the new credentials, the attacker attempted to enumerate accessible file shares. Find the name of the file accessed by the attacker from a remote share?
+- This task requires looking at all the PowerShell related logs by the host: ```WKSTN-0051.quicklogistics.org```.
+- We use the following Kibana query: ```_index:winlogbeat-* and host.name: "WKSTN-0051.quicklogistics.org" and powershell.exe```.
+- Going down the list of executed PowerShell commands, I eventually come across the following line ```C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -c cat FileSystem::\\WKSTN-1327.quicklogistics.org\ITFiles\IT_Automation.ps1```.
+- The threat actor reads IT_Automation.ps1 using the ```cat``` command.
+
+<img width="1570" height="520" alt="image" src="https://github.com/user-attachments/assets/76774123-6f6b-4b25-ad4a-f04cecd68b3d" />
+
+
+
+
+  
+

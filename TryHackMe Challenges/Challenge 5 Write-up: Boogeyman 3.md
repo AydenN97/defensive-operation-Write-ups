@@ -57,3 +57,19 @@
 
 <img width="1125" height="247" alt="image" src="https://github.com/user-attachments/assets/b30b1be6-992e-4574-a563-865d60d3673f" />
 
+
+**Task 4:** The implanted file was eventually used and executed by the stage 1 payload. Find What is the full command-line value of this execution.
+- Same process as task 2, we follow the chain of logs and see that our parent process, reminder that this is ```ProjectFinancialSummary_Q3.pdf.hta``` and ```parent.process.id: 6392``` has launched rundll32.exe
+- rundll32.exe ran the following command ```"C:\Windows\System32\rundll32.exe" D:\review.dat,DllRegisterServer```.
+- We see the ```review.dat``` file created in task 3 being executed.
+
+
+**Task 5: The stage 1 payload established a persistence mechanism. Find the name of the scheduled task created by the malicious script
+- The file ```review.dat``` was created as a scheduled task, evident by the screenshot below.
+
+<img width="1199" height="63" alt="image" src="https://github.com/user-attachments/assets/cece8ae5-a40c-4232-95eb-b3d4936e98bb" />
+
+**Task 6:
+   
+
+

@@ -152,7 +152,7 @@
 
 # Conclusion
 
-Conclusion
+
 
 The investigation successfully identified the complete attack chain used by the Boogeyman threat actor, beginning with a targeted phishing email and ultimately resulting in the deployment of ransomware. The attack began when CEO Evan Hutchinson opened a malicious attachment disguised as ProjectFinancialSummary_Q3.pdf. The attachment used a double file extension, ProjectFinancialSummary_Q3.pdf.hta, and was executed through mshta.exe, allowing the attacker to establish the initial foothold on the workstation.
 

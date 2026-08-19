@@ -27,6 +27,14 @@
 - Leverage Sysmon and Kibana from the Elastic Stack for centralized log viewing.
 - Gain familiarity with Kibana Query Language (KQL).
 - Recognize when and what Sysmon event codes are needed for hunting for a particular artifact.
+- Improve report writing skills.
 
 
 # Start of Investigation 
+
+**Task 1:** Enter Kibana through our Elastic Stack environment to access the necessary logs and establish the investigation scope.
+- Before beginning the investigation, we must first set the appropriate time range. The security team identified the relevant timeframe as ```August 29, 2023, through August 30, 2023.```
+
+<img width="441" height="63" alt="image" src="https://github.com/user-attachments/assets/5705d104-3ad1-4593-bd1a-0bdd0931f73f" />
+
+**Task 2:** 

@@ -28,11 +28,18 @@
 - KAPE
 - Windows Command Prompt
 - Windows Event Viewer
+- Eric Zimmerman(EZ) tool suite
+- MFTExplorer (EZ Tools)
+  
 
-
-
+**Goals as a Cybersecurity Student:**
+- Improve my digital forensics and investigative skills, particularly when analyzing evidence and identifying potential indicators of compromise.
+- Become more effective at finding and leveraging available resources when I am stuck, while developing the ability to work through problems without immediately knowing the solution.
+- Gain familiarity and hands-on experience with common digital forensics tools and techniques.
+- Improve my technical report-writing skills.
 
 # Start of Investigation 
+
 
 **Background:** 
 Prior to starting the investigation, our lead tells us that our forensic workstation contains KAPE artifacts located here: C:\Users\DFIRUser\Vantara-Artefacts.zip. The artifacts contained in the ZIP file were all pulled from the compromised file server. The following artifacts are included:
@@ -58,12 +65,19 @@ We are given access to the three major log sources that come with Windows system
 - No schedule task creation or service creation
 - No unusual logins or account modifications
 
-*System Security Log:*
+*Windows System Log:*
 - Within the security log, important events to keep an out for mainly relate to changes to core system components, such as the OS, certain services, and drivers. Overall, things to look out for include: Error/critical events, Disk/file system events, Driver Activity, and task scheduler.
 - I will conduct my analysis using various event ID's and detail any interesting finds, of course anything of note will always have to be correlated with other artifacts from other logs, or applications such as PowerShell.
 
-**Findings:**
+*Windows System Log Findings:*
+- Nothing overtly malicious or suspicious was identified within the logs. The majority of the events were related to system time synchronization.
 - 
 
-***ON GOING***
+*$MFT Log Analysis:*
+- Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer.
+- After the $MFT file loads, it is best to start looking for suspicious executables and files in suspicious/unusual locations.
+- 
+
+
+***ON GOING*** ***INVESTIGATION STILL IN PROGRESS***
   

@@ -71,13 +71,30 @@ We are given access to the three major log sources that come with Windows system
 
 *Windows System Log Findings:*
 - Nothing overtly malicious or suspicious was identified within the logs. The majority of the events were related to system time synchronization.
-- 
+  
 
 *$MFT Log Analysis:*
-- Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer.
+- Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer. According to online research, The Master File Table ($MFT) is a core NTFS filesystem database that contains a record for essentially every file and directory on an NTFS volume. When parsed, we will have the ability to explore the entire filesystem on the volume extracted from the compromised host.
 - After the $MFT file loads, it is best to start looking for suspicious executables and files in suspicious/unusual locations.
-- 
+- Unfortunately, MFTExplorer would not load the file, so we will have to use MFTCmd instead. command ```MFTECmd.exe -f $MFT --csv C:\Users\DFIRUser\Desktop\Evidence\MFT_Output```.
+- We will use timeline explorer to parse the newly created csv.
+
+*MFT Log Findings:*
+- If we remember earlier, our lead informed us earlier that an executable was launched from the downloads folder on the incident data. I narrow down the directory to ```C\Users\daniel.avery\Downloads``` where I found the following executable: ```VPNsetup_v2.1.exe```. Other executables and files are within the directory are seen in the image below.
+
+<img width="1570" height="238" alt="image" src="https://github.com/user-attachments/assets/76dd5b0a-758b-47dd-877e-a76769544038" />
+
+- We see the creation date of 2026-06-05.
+- Next step will be to get the hash of this executable. Unfortunately the ```VPNSetup_v2.1.exe``` executable itself was not present within the available forensic artifacts, preventing calculation of a cryptographic hash. Further investigation would be required to get a possible hash.
+
+- While analyzing the file system of the daniel.avery user, I came across consolehost_history.txt file which contained commands. The screenshot below details the commands.
+
+<img width="545" height="163" alt="image" src="https://github.com/user-attachments/assets/046db676-c418-42db-ae19-8de252169a20" />
+
+- Looking for files in unusual locations, I stumbled across the ```svchosts``` executable located in the temp folder of our user ```daniel.avery``` which is highly unusual since svchosts.exe typically lives in C:\Windows\System32. 
+  
+<img width="1365" height="91" alt="image" src="https://github.com/user-attachments/assets/8a0b4d58-8367-4196-a354-ec85874b0abb" />
 
 
-***ON GOING*** ***INVESTIGATION STILL IN PROGRESS***
+***INVESTIGATION STILL IN PROGRESS***
   

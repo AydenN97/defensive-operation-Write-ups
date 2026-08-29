@@ -58,6 +58,5 @@ We are given access to the three major log sources that come with Windows system
 - No schedule task creation or service creation
 - No unusual logins or account modifications
 
-
-
+The logs did not reveal anything significant 
   

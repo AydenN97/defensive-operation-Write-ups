@@ -58,5 +58,12 @@ We are given access to the three major log sources that come with Windows system
 - No schedule task creation or service creation
 - No unusual logins or account modifications
 
+*System Security Log:*
+- Within the security log, important events to keep an out for mainly relate to changes to core system components, such as the OS, certain services, and drivers. Overall, things to look out for include: Error/critical events, Disk/file system events, Driver Activity, and task scheduler.
+- I will conduct my analysis using various event ID's and detail any interesting finds, of course anything of note will always have to be correlated with other artifacts from other logs, or applications such as PowerShell.
+
+**Findings:**
+- 
+
 ***ON GOING***
   

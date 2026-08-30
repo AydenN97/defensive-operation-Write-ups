@@ -5,7 +5,7 @@
 
 
 
-***Mission Parameters:*** 
+***Mission Parameters:***
 - Establish how the attacker gained initial access and what tools were used.
 - Determine how persistence was maintained on the compromised machine.
 - Assess whether the attacker attempted to move beyond the initial point of compromise.

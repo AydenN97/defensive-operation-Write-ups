@@ -23,13 +23,16 @@
 
 **Environment:** Windows 11 Forensics Workstation - Virtual Machine
 
+**Note*: Report Audience: The report is written for a technical audience, including fellow cybersecurity enthusiasts, students, and professionals. Therefore, basic technical concepts and commonly understood security tools and utilities will not be explained in detail. For example, the functions and common uses of certutil.exe are assumed to be understood by the intended audience.
 
 **Tools/Technologies Used:**
 - KAPE
 - Windows Command Prompt
 - Windows Event Viewer
+- Timeline Explorer
 - Eric Zimmerman(EZ) tool suite
 - MFTExplorer (EZ Tools)
+- LogParser (EZ Tools)
   
 
 **Goals as a Cybersecurity Student:**
@@ -50,6 +53,7 @@ Prior to starting the investigation, our lead tells us that our forensic worksta
 - Users (file folder)
 - Windows (file folder)
 - $Boot
+- $J 
 - $LogFile
 - $MFT
 - $Secure_$SDS
@@ -80,7 +84,7 @@ We are given access to the three major log sources that come with Windows system
 - We will use timeline explorer to parse the newly created csv.
 
 *MFT Log Findings:*
-- If we remember earlier, our lead informed us earlier that an executable was launched from the downloads folder on the incident data. I narrow down the directory to ```C\Users\daniel.avery\Downloads``` where I found the following executable: ```VPNsetup_v2.1.exe```. Other executables and files are within the directory are seen in the image below.
+- If we remember earlier, our lead informed us earlier that an executable was launched from the downloads folder on the incident data. I narrow down the directory to ```C\Users\daniel.avery\Downloads``` where I found the following executable: ```VPNsetup_v2.1.exe```. Other executables and files are within the directory are seen in the image below. Could the execution of this file be our initial access method? 
 
 <img width="1570" height="238" alt="image" src="https://github.com/user-attachments/assets/76dd5b0a-758b-47dd-877e-a76769544038" />
 
@@ -91,10 +95,33 @@ We are given access to the three major log sources that come with Windows system
 
 <img width="545" height="163" alt="image" src="https://github.com/user-attachments/assets/046db676-c418-42db-ae19-8de252169a20" />
 
-- Looking for files in unusual locations, I stumbled across the ```svchosts``` executable located in the temp folder of our user ```daniel.avery``` which is highly unusual since svchosts.exe typically lives in C:\Windows\System32. 
+- Looking for files in unusual locations, I stumbled across the ```svchost``` executable located in the temp folder of our user ```daniel.avery``` which is highly unusual since svchosts.exe typically lives in C:\Windows\System32. 
   
 <img width="1365" height="91" alt="image" src="https://github.com/user-attachments/assets/8a0b4d58-8367-4196-a354-ec85874b0abb" />
 
+**$LogFile and $J Analysis:**
+- I will use LogParser to parse this log into a CSV file, which can then be loaded into Timeline Explorer for further analysis.
+- I am looking for evidence of the creation of svchost.exe in the Temp folder, along with any other notable findings.
+- A significant finding is SVCHOSTS.exe, which was confirmed to be present in the Temp folder. I initially overlooked this file, but its presence is suspicious because it is likely an impersonation attempt of the legitimate Windows binary, svchost.exe. The additional "s" at the end of the filename is consistent with a form of typosquatting that could be used to make the malicious executable appear legitimate.
+- Examining the Prefetch folder, which can provide evidence that a program was executed on the system, we again see evidence of the fake svchosts.exe file. This strengthens the conclusion that the suspicious executable was not only present on the system but was also executed.
+- I initially thought that SVCHOST.exe was legitimately put in the temp folder and that the placement was suspicious, however I missed that the file I was looking at was actually SVCHOST(S), which is not normal spelling for the native windows binary.
+
+<img width="180" height="325" alt="image" src="https://github.com/user-attachments/assets/eda3630e-a67f-48cf-86f3-28dd9259c5e0" />
+
+**Prefetch analysis:**
+- Interestingly, immediately before the suspicious SVCHOSTS.exe file was executed, the legitimate Windows utility certutil.exe was also executed. Given the timing and the role of certutil.exe, this is a significant finding.
+- This suggests that ```certutil.exe``` may have been used by the attacker to download or otherwise deliver the suspicious ```SVCHOSTS.exe``` file to the system. The close time relationship between the two executions supports this as a possible delivery mechanism, although additional evidence would be needed to confirm the exact method used.
+
+<img width="372" height="46" alt="image" src="https://github.com/user-attachments/assets/d91a71f1-5aee-469f-be6f-0cf85dd91064" />
+
+
+
+   
+
+
+
+
+  
 
 ***INVESTIGATION STILL IN PROGRESS***
   

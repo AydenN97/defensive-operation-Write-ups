@@ -112,6 +112,8 @@ We are given access to the three major log sources that come with Windows system
 - Interestingly, immediately before the suspicious SVCHOSTS.exe file was executed, the legitimate Windows utility certutil.exe was also executed. Given the timing and the role of certutil.exe, this is a significant finding.
 - This suggests that ```certutil.exe``` may have been used by the attacker to download or otherwise deliver the suspicious ```SVCHOSTS.exe``` file to the system. The close time relationship between the two executions supports this as a possible delivery mechanism, although additional evidence would be needed to confirm the exact method used.
 
+Now that we know a good chunk of the attacker's initial compromise takes place between 5:30 to 6:10 AM on June 5th, I wanted to revisit the windows logs briefly and scope out events in that time period.
+
 <img width="372" height="46" alt="image" src="https://github.com/user-attachments/assets/d91a71f1-5aee-469f-be6f-0cf85dd91064" />
 
 

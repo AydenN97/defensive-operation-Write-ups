@@ -58,32 +58,33 @@ Prior to starting the investigation, our lead tells us that our forensic worksta
 - $MFT
 - $Secure_$SDS
 - Full Winevt system, security, and Application logs
+- Other Winevt logs: Task scheduler 
 
 
-***Task 1: Find how the attacker gained Initial Access and any tools that were used.***
+***Task 1: Finding how the attacker gained Initial Access and any tools that were used.***
 
 We are given access to the three major log sources that come with Windows systems: System, Security, and Application. The Security log, in particular, is where I start my investigation, looking for anomalous events relating to process creation, scheduled task creation, successful/failed logons, user account modification/creation, and service installation. Our lead, Daniel informs us that there is also a contractor with legitimate access to that system, so we should not assume everything unusual is the attacker. Daniel informs us that an executable was launched interactively from the Downloads folder on the incident date (June 5).
 
-*Windows Security Log Findings:* 
+**Windows Security Log Findings:** 
 - Process Creation logs revealed the presence of several legitimate system processes. Further investigation would be required to determine whether any of these processes were being abused for malicious purposes. We also have access to the process command line log which should reveal more. 
 - No schedule task creation or service creation
 - No unusual logins or account modifications
 
-*Windows System Log:*
+**Windows System Log:**
 - Within the security log, important events to keep an out for mainly relate to changes to core system components, such as the OS, certain services, and drivers. Overall, things to look out for include: Error/critical events, Disk/file system events, Driver Activity, and task scheduler.
 - I will conduct my analysis using various event ID's and detail any interesting finds, of course anything of note will always have to be correlated with other artifacts from other logs, or applications such as PowerShell.
 
-*Windows System Log Findings:*
+**Windows System Log Findings:**
 - Nothing overtly malicious or suspicious was identified within the logs. The majority of the events were related to system time synchronization.
   
 
-*$MFT Log Analysis:*
+**$MFT Log Analysis:**
 - Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer. According to online research, The Master File Table ($MFT) is a core NTFS filesystem database that contains a record for essentially every file and directory on an NTFS volume. When parsed, we will have the ability to explore the entire filesystem on the volume extracted from the compromised host.
 - After the $MFT file loads, it is best to start looking for suspicious executables and files in suspicious/unusual locations.
 - Unfortunately, MFTExplorer would not load the file, so we will have to use MFTCmd instead. command ```MFTECmd.exe -f $MFT --csv C:\Users\DFIRUser\Desktop\Evidence\MFT_Output```.
 - We will use timeline explorer to parse the newly created csv.
 
-*MFT Log Findings:*
+**MFT Log Findings:**
 - If we remember earlier, our lead informed us earlier that an executable was launched from the downloads folder on the incident data. I narrow down the directory to ```C\Users\daniel.avery\Downloads``` where I found the following executable: ```VPNsetup_v2.1.exe```. Other executables and files are within the directory are seen in the image below. Could the execution of this file be our initial access method? 
 
 <img width="1570" height="238" alt="image" src="https://github.com/user-attachments/assets/76dd5b0a-758b-47dd-877e-a76769544038" />
@@ -112,14 +113,53 @@ We are given access to the three major log sources that come with Windows system
 - Interestingly, immediately before the suspicious SVCHOSTS.exe file was executed, the legitimate Windows utility certutil.exe was also executed. Given the timing and the role of certutil.exe, this is a significant finding.
 - This suggests that ```certutil.exe``` may have been used by the attacker to download or otherwise deliver the suspicious ```SVCHOSTS.exe``` file to the system. The close time relationship between the two executions supports this as a possible delivery mechanism, although additional evidence would be needed to confirm the exact method used.
 
-Now that we know a good chunk of the attacker's initial compromise takes place between 5:30 to 6:10 AM on June 5th, I wanted to revisit the windows logs briefly and scope out events in that time period.
-
 <img width="372" height="46" alt="image" src="https://github.com/user-attachments/assets/d91a71f1-5aee-469f-be6f-0cf85dd91064" />
 
 
+***Task 1 Summary — Initial Access and Tools:***
 
-   
+The investigation identified several artifacts associated with the compromise, although the exact initial access vector could not be conclusively determined from the available evidence.
 
+The Windows Security and System logs did not reveal any obvious malicious logons, account modifications, scheduled task creation, service installation, or other overtly suspicious activity. However, analysis of filesystem artifacts provided more significant findings. The $MFT revealed an executable named VPNSetup_v2.1.exe in C:\Users\daniel.avery\Downloads, with a creation date matching the incident date of June 5. This is notable because the incident lead specifically reported that an executable was launched interactively from the Downloads folder on that date. The executable itself was not present in the forensic artifacts, preventing further analysis or hash calculation.
+
+Additional filesystem analysis identified SVCHOSTS.exe in the user's Temp directory. The filename is highly suspicious because it closely resembles the legitimate Windows svchost.exe binary while adding an additional "s". Prefetch artifacts provide evidence that SVCHOSTS.exe was executed on the system.
+
+Prefetch analysis also showed certutil.exe executing immediately before SVCHOSTS.exe. Given certutil.exe's capabilities, it is possible that the utility was used to retrieve or deliver the suspicious executable. The temporal relationship between the two executions makes this a significant lead, but the available evidence is insufficient to definitively establish certutil.exe as the delivery mechanism.
+
+Based on the current evidence, VPNSetup_v2.1.exe represents a potential initial-access vector, while certutil.exe and the impersonating SVCHOSTS.exe appear to be associated with subsequent stages of the activity. Further analysis of command-line artifacts, file contents, network artifacts, and additional forensic evidence would be necessary to establish the complete attack chain with confidence.
+
+
+
+***Task 2: Finding ways the attacker may have maintained persistence.***
+
+Now that we know a significant portion of the attacker's initial compromise occurred between 5:50 and 6:10 AM on June 5, with the execution of our suspicious VPNSetup_v2.1.exe occurring at approximately 6:01 AM, I wanted to briefly revisit the Windows Event Logs and scope my analysis to this timeframe.
+
+I reviewed the Application, System, and Security logs for events occurring between 5:50 and 6:10 AM but did not identify anything of significance. I then remembered that one of the provided forensic artifacts was a Task Scheduler log, so I decided to review it for additional evidence of activity during this timeframe.
+
+**Task Scheduler Log Findings:**
+- Exactly at 6:01 AM, an scheduled task was registered by user daniel.avery: ```MicrosoftEdgeUpdateCore```.
+- The full executable path is ```C:\Users\daniel.avery\AppData\Local\Temp\svchosts.exe```.
+
+
+
+***Task 3: Assessing weather the attacker attempts to move beyond the initial point of compromise.***
+
+This is where the ```consolehost_history.txt``` file extracted in task 1 comes in handy. The attack appeared to perform the following actions based off the console history:
+| Command                                                  | Likely purpose                                                                                |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `whoami /all`                                            | Identifies the current user, groups, privileges, and security token                           |
+| `net user /domain`                                       | Enumerates domain user accounts                                                               |
+| `net localgroup administrators`                          | Identifies members of the local Administrators group                                          |
+| `ipconfig /all`                                          | Collects network configuration, DNS, gateways, adapters, etc.                                 |
+| `nltest /domain_trusts`                                  | Enumerates domain trusts and potentially identifies other domains                             |
+| `net use Z: \\VFG-FS01\Finance /user:VFG\svc.backup ...` | Authenticates to a remote file share using the `svc.backup` account and maps it as drive `Z:` |
+
+These actions are often synonymous with post-compromise reconnaissance and lateral movement.
+
+
+***Task 4: Identifying any unauthorized accounts or activity not attributed to legitimate users.***
+
+We know from the previous task that the attacker under the compromised account of daniel.avery was able to authenticate and gain access as the domain account: ```svc.backup```.
 
 
 

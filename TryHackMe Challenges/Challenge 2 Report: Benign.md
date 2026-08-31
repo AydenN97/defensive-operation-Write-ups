@@ -1,4 +1,4 @@
-***Title:*** Challenge 2 Write-Up: Benign 
+***Title:*** Challenge 2 Report: Benign 
 
 ***Scenario Overview:*** A client's Intrusion Detection System(IDS) indicated a potentially suspicious process execution on one the hosts from the HR department. The possibility of a compromised workstation within the HR department warrants an investigation. 
 

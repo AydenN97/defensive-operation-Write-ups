@@ -1,4 +1,4 @@
-# Title: Challenge 3 Write-Up: Boogeyman 1
+# Title: Challenge 3 Report: Boogeyman 1
 
 # Introduction
 

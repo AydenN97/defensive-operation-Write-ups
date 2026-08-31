@@ -1,4 +1,4 @@
-***Title:*** Challenge 1 Write-Up: New Hire Old Artifacts
+***Title:*** Challenge 1 Report: New Hire Old Artifacts
 
 
 ***Scenario Overview:*** As a SOC Analyst at a Managed Security Service Provider (MSSP), I was tasked with investigating a newly onboarded customer, Widget LLC, whose endpoints had recently been integrated into our Splunk environment.

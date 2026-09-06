@@ -19,9 +19,9 @@
 
 **Room Link:** [https://tryhackme.com/room/thevantaraleak]
 
-**Categories:** Blue Team / Digital Forensics / Compromised Endpoint Investigation
+**Categories:** Blue Team / Digital Forensics / Endpoint Investigation
 
-**Environment:** Windows 11 Forensics Workstation - Virtual Machine
+**Environment:** Windows 11 Forensics Workstation
 
 **Note*: Report Audience: The report is written for a technical audience, including fellow cybersecurity enthusiasts, students, and professionals. Therefore, basic technical concepts and commonly understood security tools and utilities will not be explained in detail. For example, the functions and common uses of certutil.exe are assumed to be understood by the intended audience.
 
@@ -46,7 +46,7 @@
 
 
 **Background:** 
-Prior to starting the investigation, our lead tells us that our forensic workstation contains KAPE artifacts located here: C:\Users\DFIRUser\Vantara-Artefacts.zip. The artifacts contained in the ZIP file were all pulled from the compromised file server. The following artifacts are included:
+Prior to starting the investigation, our lead tells us that our forensic workstation contains artifacts located here: ```C:\Users\DFIRUser\Vantara-Artefacts.zip```. The artifacts contained in the file were collected as evidence from the compromised file server. The following artifacts include:
 - Windows Console Log.csv
 - Windows SkipLog.csv
 - Windows CopyLog.csv
@@ -59,7 +59,7 @@ Prior to starting the investigation, our lead tells us that our forensic worksta
 - $LogFile
 - $MFT
 - $Secure_$SDS
-- Full Winevt system, security, and Application logs
+- Winevt system, security, and Application logs
 - Other Winevt logs: Task scheduler 
 
 
@@ -68,34 +68,34 @@ Prior to starting the investigation, our lead tells us that our forensic worksta
 We are given access to the three major log sources that come with Windows systems: System, Security, and Application. The Security log, in particular, is where I start my investigation, looking for anomalous events relating to process creation, scheduled task creation, successful/failed logons, user account modification/creation, and service installation. Our lead, Daniel informs us that there is also a contractor with legitimate access to that system, so we should not assume everything unusual is the attacker. Daniel informs us that an executable was launched interactively from the Downloads folder on the incident date (June 5).
 
 **Windows Security Log Findings:** 
-- Process Creation logs revealed the presence of several legitimate system processes. Further investigation would be required to determine whether any of these processes were being abused for malicious purposes. We also have access to the process command line log which should reveal more. 
-- No schedule task creation or service creation
-- No unusual logins or account modifications
+- Process Creation logs revealed the presence of several legitimate system processes. Further investigation would be required to determine whether any of these processes were being abused for malicious purposes. We also have access to the command line logging history which should reveal more. 
+- No schedule task creation or service creation.
+- No unusual logins.
+- A user account was created: helpdesk$ by user daniel.avery.
 
 **Windows System Log:**
-- Within the security log, important events to keep an out for mainly relate to changes to core system components, such as the OS, certain services, and drivers. Overall, things to look out for include: Error/critical events, Disk/file system events, Driver Activity, and task scheduler.
-- I will conduct my analysis using various event ID's and detail any interesting finds, of course anything of note will always have to be correlated with other artifacts from other logs, or applications such as PowerShell.
+- Within the security log, important events to keep an eye out for are mainly related to changes to core system components, such as the OS, certain services, and drivers. Overall, things to look out for include: Error/critical events, Disk/file system events, Driver Activity, and task scheduler.
+- I will conduct my analysis using various event ID's, detailing anything that may be suspicious.
 
 **Windows System Log Findings:**
 - Nothing overtly malicious or suspicious was identified within the logs. The majority of the events were related to system time synchronization.
   
 
 **$MFT Log Analysis:**
-- Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer. According to online research, The Master File Table ($MFT) is a core NTFS filesystem database that contains a record for essentially every file and directory on an NTFS volume. When parsed, we will have the ability to explore the entire filesystem on the volume extracted from the compromised host.
+- Included in our artifacts is an $MFT log, which we can parse using Eric Zimmerman MFTE Explorer. Researching the log, The Master File Table ($MFT) is a core NTFS filesystem database that contains a record for essentially every file and directory on an NTFS volume. When parsed, we will have the ability to explore the entire filesystem on the volume extracted from the compromised host.
 - After the $MFT file loads, it is best to start looking for suspicious executables and files in suspicious/unusual locations.
-- Unfortunately, MFTExplorer would not load the file, so we will have to use MFTCmd instead. command ```MFTECmd.exe -f $MFT --csv C:\Users\DFIRUser\Desktop\Evidence\MFT_Output```.
-- We will use timeline explorer to parse the newly created csv.
+- Unfortunately, MFTExplorer would not load the file, so we will have to use MFTCmd instead,  which is the command line utility for MFTExplorer. command ```MFTECmd.exe -f $MFT --csv C:\Users\DFIRUser\Desktop\Evidence\MFT_Output```.
+- We can then use timeline explorer to examine the newly created csv.
 
 **MFT Log Findings:**
 - If we remember earlier, our lead informed us earlier that an executable was launched from the downloads folder on the incident data. I narrow down the directory to ```C\Users\daniel.avery\Downloads``` where I found the following executable: ```VPNsetup_v2.1.exe```. Other executables and files are within the directory are seen in the image below. Could the execution of this file be our initial access method? 
 
 <img width="1570" height="238" alt="image" src="https://github.com/user-attachments/assets/76dd5b0a-758b-47dd-877e-a76769544038" />
 
-- We see the creation date of 2026-06-05.
-- Next step will be to get the hash of this executable. Unfortunately the ```VPNSetup_v2.1.exe``` executable itself was not present within the available forensic artifacts, preventing calculation of a cryptographic hash. Further investigation would be required to get a possible hash.
-- It is possible that the amcache hive contains the hash of VPNSetup_v2.1.exe since this hive often contains info regarding executable files that the OS has encountered.
-- We will parse it using EZ tools amcacheparser. The resulting hash is found: ```SHA1
-d3c83599d21508c14ffe67d87abf5a83ddc4d157```
+- We see the creation date of 2026-06-05, the date which we were informed was likely the start of the incident. 
+- Next step will be to get the hash of this executable. Unfortunately the ```VPNSetup_v2.1.exe``` executable itself was not present within the parsed MFT log. Further investigation would be required to get a hash.
+- Based on the available artifacts, I determined that the Amcache hive may contain the hash of VPNSetup_v2.1.exe, as the Amcache commonly contains information about executable files encountered by the Windows operating system. We will parse the Amcache hive using Eric Zimmerman's AmcacheParser to determine whether a hash for VPNSetup_v2.1.exe is present.
+- The resulting hash is found: ```SHA1d3c83599d21508c14ffe67d87abf5a83ddc4d157```
 
 <img width="998" height="40" alt="image" src="https://github.com/user-attachments/assets/75b1885c-41c8-4253-8283-e3415f0eeca2" />
 
@@ -104,16 +104,16 @@ d3c83599d21508c14ffe67d87abf5a83ddc4d157```
 
 <img width="545" height="163" alt="image" src="https://github.com/user-attachments/assets/046db676-c418-42db-ae19-8de252169a20" />
 
-- Looking for files in unusual locations, I stumbled across the ```svchost``` executable located in the temp folder of our user ```daniel.avery``` which is highly unusual since svchosts.exe typically lives in C:\Windows\System32. 
+- Looking for files in unusual locations, I stumbled across the ```svchosts``` executable located in the temp folder of our user ```daniel.avery``` which is highly unusual since svchosts.exe typically lives in C:\Windows\System32. 
   
 <img width="1365" height="91" alt="image" src="https://github.com/user-attachments/assets/8a0b4d58-8367-4196-a354-ec85874b0abb" />
 
 **$LogFile and $J Analysis:**
 - I will use LogParser to parse this log into a CSV file, which can then be loaded into Timeline Explorer for further analysis.
 - I am looking for evidence of the creation of svchost.exe in the Temp folder, along with any other notable findings.
-- A significant finding is SVCHOSTS.exe, which was confirmed to be present in the Temp folder. I initially overlooked this file, but its presence is suspicious because it is likely an impersonation attempt of the legitimate Windows binary, svchost.exe. The additional "s" at the end of the filename is consistent with a form of typosquatting that could be used to make the malicious executable appear legitimate.
+- A significant finding is ```SVCHOSTS.exe```, which was confirmed to be present in the Temp folder. I initially overlooked this minor detail; however, its presence is suspicious because it may represent an impersonation attempt of the legitimate Windows binary, svchost.exe. The additional “s” at the end of the filename is consistent with a form of typosquatting that could be used to make a malicious executable appear legitimate.
 - Examining the Prefetch folder, which can provide evidence that a program was executed on the system, we again see evidence of the fake svchosts.exe file. This strengthens the conclusion that the suspicious executable was not only present on the system but was also executed.
-- I initially thought that SVCHOST.exe was legitimately put in the temp folder and that the placement was suspicious, however I missed that the file I was looking at was actually SVCHOST(S), which is not normal spelling for the native windows binary.
+- I initially thought that the legitimate ```SVCHOST.exe``` was  put in the temp folder and that just the placement was suspicious, however I missed that the file I was looking at was actually SVCHOST(S), which is a completly different binary/file and not normal spelling for the native windows binary.
 
 <img width="180" height="325" alt="image" src="https://github.com/user-attachments/assets/eda3630e-a67f-48cf-86f3-28dd9259c5e0" />
 
@@ -147,7 +147,6 @@ I reviewed the Application, System, and Security logs for events occurring betwe
 **Task Scheduler Log Findings:**
 - Exactly at 6:01 AM, an scheduled task was registered by user daniel.avery: ```MicrosoftEdgeUpdateCore```.
 - The full executable path is ```C:\Users\daniel.avery\AppData\Local\Temp\svchosts.exe```.
-
 
 
 ***Task 3: Assessing weather the attacker attempts to move beyond the initial point of compromise.***
@@ -187,6 +186,8 @@ While parsing the SAM Registry hive of the compromised host, I came across a use
 
 
 # Executive Summary
+
+
 
 **IN PROGRESS**
 

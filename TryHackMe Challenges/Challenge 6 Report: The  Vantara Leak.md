@@ -26,13 +26,14 @@
 **Note*: Report Audience: The report is written for a technical audience, including fellow cybersecurity enthusiasts, students, and professionals. Therefore, basic technical concepts and commonly understood security tools and utilities will not be explained in detail. For example, the functions and common uses of certutil.exe are assumed to be understood by the intended audience.
 
 **Tools/Technologies Used:**
-- KAPE
 - Windows Command Prompt
 - Windows Event Viewer
 - Timeline Explorer
 - Eric Zimmerman(EZ) tool suite
 - MFTExplorer (EZ Tools)
 - LogParser (EZ Tools)
+- AmCacheParser (EZ Tools)
+- Registry Explorer
   
 
 **Goals as a Cybersecurity Student:**
@@ -52,6 +53,7 @@ Prior to starting the investigation, our lead tells us that our forensic worksta
 - Program Data (file folder)
 - Users (file folder)
 - Windows (file folder)
+- amcache.hve
 - $Boot
 - $J 
 - $LogFile
@@ -91,6 +93,12 @@ We are given access to the three major log sources that come with Windows system
 
 - We see the creation date of 2026-06-05.
 - Next step will be to get the hash of this executable. Unfortunately the ```VPNSetup_v2.1.exe``` executable itself was not present within the available forensic artifacts, preventing calculation of a cryptographic hash. Further investigation would be required to get a possible hash.
+- It is possible that the amcache hive contains the hash of VPNSetup_v2.1.exe since this hive often contains info regarding executable files that the OS has encountered.
+- We will parse it using EZ tools amcacheparser. The resulting hash is found: ```SHA1
+d3c83599d21508c14ffe67d87abf5a83ddc4d157```
+
+<img width="998" height="40" alt="image" src="https://github.com/user-attachments/assets/75b1885c-41c8-4253-8283-e3415f0eeca2" />
+
 
 - While analyzing the file system of the daniel.avery user, I came across consolehost_history.txt file which contained commands. The screenshot below details the commands.
 
@@ -160,10 +168,25 @@ These actions are often synonymous with post-compromise reconnaissance and later
 ***Task 4: Identifying any unauthorized accounts or activity not attributed to legitimate users.***
 
 We know from the previous task that the attacker under the compromised account of daniel.avery was able to authenticate and gain access as the domain account: ```svc.backup```.
+While parsing the SAM Registry hive of the compromised host, I came across a user account named ```helpdesk$```. The account was created by the compromised daniel.avery account.
+
+<img width="700" height="125" alt="image" src="https://github.com/user-attachments/assets/2baa56bf-f7b2-4c8c-8b95-aa974a1e5f4d" />
+
+
+***Task 5: Confirming whether sensitive data was accessed or staged and quantify the exposure.***
+- The Windows Recent Items artifacts indicate that the user account ```daniel.avery``` interacted with the following sensitive files: ```Finance Reports```, ```Q1_Revenue```, ```week1_Notes```, ```Infrastructure Overview```, and ```Q1_2026_Revenue_Summary```.
+- The files present in the user's Recent Items/Recent path do not directly indicate whether the files were created, accessed, or modified. However, the reconstructed $J file provides this information. I correlated the findings from the Recent Items path with the entries in the $J file and determined that all of these files were accessed after the initial compromise.
+
+- A compressed archive named ```data_backup.zip``` was found in the temp folder. This was created shortly after initial compromise.
+
+<img width="1565" height="35" alt="image" src="https://github.com/user-attachments/assets/b822d0e3-90fd-435e-80cd-b025d6ec9311" />
 
 
 
-  
+<img width="951" height="317" alt="image" src="https://github.com/user-attachments/assets/3f4aa229-2254-4288-984a-93b0b0cc5236" />
 
-***INVESTIGATION STILL IN PROGRESS***
-  
+
+# Executive Summary
+
+**IN PROGRESS**
+

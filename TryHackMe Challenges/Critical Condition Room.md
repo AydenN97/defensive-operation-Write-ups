@@ -1,7 +1,7 @@
 TryHackMe Room Link: https://tryhackme.com/room/criticalcondition
 
 
-## Sigma Rule for PR #1
+## Completed Sigma Rule for PR #1
 
 ```yaml
 title: VPN Appliance Worker Process Spawns Suspicious Child Process

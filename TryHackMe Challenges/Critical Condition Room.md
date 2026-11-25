@@ -1,7 +1,7 @@
 
 
 
-## Sigma Rule for PR 1
+## Sigma Rule for PR #1
 
 ```yaml
 title: VPN Appliance Worker Process Spawns Suspicious Child Process
@@ -54,5 +54,5 @@ falsepositives:
 level: high
 ```
 
-
+## Sigma Rule for PR #2
 

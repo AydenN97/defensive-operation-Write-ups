@@ -1,6 +1,6 @@
 TryHackMe Room Link: https://tryhackme.com/room/criticalcondition
 
-*Purpose*: Document completed Sigma Rules needed to complete the critical condition room in TryHackMe.
+**Purpose**: Document completed Sigma Rules needed to complete the critical condition room in TryHackMe.
 
 
 ## Completed Sigma Rule for PR #1
